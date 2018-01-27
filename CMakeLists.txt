@@ -13,6 +13,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 include_directories(include)
+include_directories(${OPENSSL_INCLUDE_DIR})
 
 file(GLOB SOURCES "src/*.cpp")
 file(GLOB HEADERS "include/cryptoneat/*.h")
@@ -27,7 +28,7 @@ target_link_libraries(Tests gtest cryptoneat ssl crypto pthread uuid)
 
 ELSEIF (WIN32)
 
-target_link_libraries(Tests gtest cryptoneat ssl crypto)
+target_link_libraries(Tests ${GTEST_LIBRARY} cryptoneat ${OPENSSL_LIBRARIES} Ws2_32 Rpcrt4 )
 
 ENDIF ()
 

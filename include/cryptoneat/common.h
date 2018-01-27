@@ -20,6 +20,10 @@ public:
 
     T* operator&()
     {
+		if (size() == 0)
+		{
+			return 0;
+		}
         return &(buf_[0]);
     }
 
