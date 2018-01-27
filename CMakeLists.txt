@@ -36,8 +36,8 @@ add_test(NAME AllTests COMMAND Tests)
 
 file(COPY pem DESTINATION .)
  
-install(TARGETS cryptoneat DESTINATION /usr/local/lib)
+install(TARGETS cryptoneat DESTINATION lib)
 
 install(FILES ${HEADERS} DESTINATION include/cryptoneat)
 
-install(FILES cryptoneat.pc DESTINATION /usr/local/lib/pkgconfig)
+install(FILES cryptoneat.pc DESTINATION lib/pkgconfig)
