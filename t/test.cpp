@@ -8,8 +8,6 @@
 #include <string>
 #include <exception>
 #include <functional>
-#include <event2/thread.h>
-#include <event2/event.h>
 
 #include "cryptoneat/cryptoneat.h"
 #include "cryptoneat/base64.h"
