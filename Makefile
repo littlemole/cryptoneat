@@ -1,41 +1,10 @@
-#################################################
-# global makefile include 
-#################################################
-
-#################################################
-# compiler
-#################################################
-
 CXX = g++
-
 DESTDIR=/
 PREFIX=/usr/local
 
-DEBUG = -g 
-release : override DEBUG = -O3
-
-# uncomment this line to make install default to release
-# install : override DEBUG = -O3
-
-DEFAULT_OPTS = -std=c++14
-DEFAULT_LIBS = 
-
-ifeq ($(CXX),clang++-5.0)
-DEFAULT_LIBS = -stdlib=libc++ -fcoroutines-ts  -lc++abi -std=c++14
-DEFAULT_OPTS = -stdlib=libc++ -fcoroutines-ts -D_RESUMABLE_FUNCTIONS_SUPPORTED 
-endif
-
-#c++ compiler options
-
-OPTIONS = -fpic -Wno-write-strings -pthread -D_REENTRANT $(DEFAULT_OPTS)
-
-TESTFLAGS = -g
-
-# the lib to build
-
-LIBNAME = $(shell pwd | xargs basename)
+LIBNAME = cryptoneat
 LIB = ./lib$(LIBNAME).a
-LIBINC = ./include/$(shell echo $(LIBNAME) | sed 's/-/\//'  )
+LIBINC = ./include
 
 
 #################################################
@@ -83,15 +52,15 @@ build: test
 # make install copies the lib to system folders
 #################################################
 
-install: release ## installs binaries and headers to $(DESTDIR)/$(PREFIX) defaults to /usr/local
+install: release 
 	-rm -rf $(DESTDIR)/$(PREFIX)/include/$(LIBINC)
-	cp -r $(LIBINC) $(DESTDIR)/$(PREFIX)/include/cryptoneat
+	cp -r $(LIBINC) $(DESTDIR)/$(PREFIX)/include/$(LIBNAME)
 	cp $(LIB) $(DESTDIR)/$(PREFIX)/lib
 	cp $(LIBNAME).pc $(DESTDIR)/$(PREFIX)/lib/pkgconfig/
 	
 
 remove: 
-	-rm -rf $(DESTDIR)/$(PREFIX)/include/cryptoneat
+	-rm -rf $(DESTDIR)/$(PREFIX)/include/$(LIBNAME)
 	-rm $(DESTDIR)/$(PREFIX)/lib/$(LIB)
 	-rm $(DESTDIR)/$(PREFIX)/lib/pkgconfig/$(LIBNAME).pc
 	

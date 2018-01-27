@@ -1,17 +1,5 @@
-#################################################
-# compiler
-#################################################
-
-CXX = g++
-
-DESTDIR=/
-PREFIX=/usr/local
-
 DEBUG = -g 
 release : override DEBUG = -O3
-
-# uncomment this line to make install default to release
-# install : override DEBUG = -O3
 
 DEFAULT_OPTS = -std=c++14
 DEFAULT_LIBS = 
@@ -28,10 +16,10 @@ TESTFLAGS = -g
 TEST_SRC   = .
 TEST_BUILD = ./build
 
-INCLUDE = -I../include
-
-CPPFLAGS = -Wall $(DEBUG) $(REENTRANT) $(INCLUDE) $(OPTIONS) 
+CPPFLAGS = -Wall -I../include $(DEBUG) $(REENTRANT) $(OPTIONS) 
 DEPS = -lssl -lcrypto -lpthread
+
+TEST_LIBS  = /usr/lib/libgtest.a  ../libcryptoneat.a -luuid  $(DEPS)
 
 
 # Objects for the test executable
@@ -76,4 +64,3 @@ clean:
 release : all
 
 
-TEST_LIBS  = /usr/lib/libgtest.a  ../libcryptoneat.a -luuid  $(DEPS)

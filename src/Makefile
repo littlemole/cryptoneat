@@ -1,45 +1,19 @@
 
-#################################################
-# compiler
-#################################################
-
-CXX = g++
-
-DESTDIR=/
-PREFIX=/usr/local
-
 DEBUG = -g -DMOL_PROMISE_DEBUG
 release : override DEBUG = -O3
-
-# uncomment this line to make install default to release
-# install : override DEBUG = -O3
 
 DEFAULT_OPTS = -std=c++14
 DEFAULT_LIBS = 
 
 ifeq ($(CXX),clang++-5.0)
-DEFAULT_LIBS = -stdlib=libc++ -fcoroutines-ts  -lc++abi -std=c++14
-DEFAULT_OPTS = -stdlib=libc++ -fcoroutines-ts -D_RESUMABLE_FUNCTIONS_SUPPORTED 
+DEFAULT_LIBS = -stdlib=libc++ -fcoroutines-ts  -lc++abi #-std=c++14
+DEFAULT_OPTS = -std=c++14 -stdlib=libc++ -fcoroutines-ts -D_RESUMABLE_FUNCTIONS_SUPPORTED 
 endif
-
-#c++ compiler options
 
 OPTIONS = -std=c++14 -fpic -Wno-write-strings -pthread -D_REENTRANT $(DEFAULT_OPTS)
 
-TESTFLAGS = -g
-
-CWD=$(shell pwd)
-
-#################################################
-# include and dependency information
-#################################################
-
-# includes
-INCLUDE = -I../include  -I../../build/include
-
-
 # compile flags
-CPPFLAGS = -Wall $(DEBUG) $(REENTRANT) $(INCLUDE) $(OPTIONS) 
+CPPFLAGS = -Wall -I../include $(DEBUG) $(REENTRANT) $(INCLUDE) $(OPTIONS) 
 
 
 # library flags
