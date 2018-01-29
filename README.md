@@ -16,7 +16,15 @@ openssl with cpp for mere mortals
 - hex encode/encode
 
 # dependencies
-openssl, c++14
+openssl, c++14, gtest, libuuid (libuuid on linux only)
+
+for ubuntu do the following to install dependencies
+	
+	sudo apt-get install libgtest-dev uuid-dev libgtest-dev cmake
+	cd /usr/src/gtest
+	sudo cmake .
+	sudo make
+	sudo ln -s /usr/src/gtest/libgtest.a /usr/lib/libgtest.a
 
 # install - linux
 
