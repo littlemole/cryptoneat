@@ -19,7 +19,7 @@ TEST_BUILD = ./build
 CPPFLAGS = -Wall -I../include $(DEBUG) $(REENTRANT) $(OPTIONS) 
 DEPS = -lssl -lcrypto -lpthread
 
-TEST_LIBS  = /usr/lib/libgtest.a  ../libcryptoneat.a -luuid  $(DEPS)
+TEST_LIBS  = /usr/lib/libgtest.a  ../libcryptoneat.a -luuid  $(DEPS) $(DEFAULT_LIBS)
 
 
 # Objects for the test executable
