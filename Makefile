@@ -4,7 +4,7 @@ PREFIX=/usr/local
 
 LIBNAME = cryptoneat
 LIB = ./lib$(LIBNAME).a
-LIBINC = ./include
+LIBINC = ./include/cryptoneat
 
 
 #################################################
@@ -53,7 +53,7 @@ build: test
 #################################################
 
 install: release 
-	-rm -rf $(DESTDIR)/$(PREFIX)/include/$(LIBINC)
+	-rm -rf $(DESTDIR)/$(PREFIX)/include/$(LIBNAME)
 	cp -r $(LIBINC) $(DESTDIR)/$(PREFIX)/include/$(LIBNAME)
 	cp $(LIB) $(DESTDIR)/$(PREFIX)/lib
 	cp $(LIBNAME).pc $(DESTDIR)/$(PREFIX)/lib/pkgconfig/
