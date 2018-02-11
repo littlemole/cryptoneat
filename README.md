@@ -176,4 +176,39 @@ see test.cpp for more usage examples.
 
 
 # win32
-wip
+
+get vcpkg for dependency resolution: [vcpg]
+
+assuming vcpg installed in c: 
+
+	cd c:\vcpkg
+	.\vcpkg.exe install opensll gtest
+	
+
+clone and install lib. note yoz have to specify %PATH_TO_VCPKG_DIR% somehow.
+
+	git clone https://littlemole/cryptoneat
+	cd cryptoneat
+	mkdir build
+	cd build
+	cmake .. -DCMAKE_TOOLCHAIN_FILE=%PATH_TO_VCPKG_DIR%\scripts\buildsystems\vcpkg.cmake
+
+now you should have a nice vc++ solution to run. 
+
+alternatively build from a dev prompt with:
+
+	msbuild ALL_BUILD.vcxproj
+
+and run the tests
+
+	msbuild RUN_TESTS.vcxproj
+
+
+## use vcpkg clone
+
+https://github.com/littlemole/vcpkg/tree/promise
+
+use the cryptoneat ports.
+
+
+	
