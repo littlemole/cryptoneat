@@ -56,6 +56,7 @@ install: release
 	-rm -rf $(DESTDIR)/$(PREFIX)/include/$(LIBNAME)
 	cp -r $(LIBINC) $(DESTDIR)/$(PREFIX)/include/$(LIBNAME)
 	cp $(LIB) $(DESTDIR)/$(PREFIX)/lib
+	mkdir -p $(DESTDIR)/$(PREFIX)/lib/pkgconfig/
 	cp $(LIBNAME).pc $(DESTDIR)/$(PREFIX)/lib/pkgconfig/
 	
 
