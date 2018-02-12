@@ -65,7 +65,7 @@ remove:
 	-rm $(DESTDIR)/$(PREFIX)/lib/$(LIB)
 	-rm $(DESTDIR)/$(PREFIX)/lib/pkgconfig/$(LIBNAME).pc
 	
-release: clean ## make release build
+release: remove ## make release build
 	cd src && make release -e -f Makefile 
 	cd t && make release -e -f Makefile 
 
