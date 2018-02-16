@@ -33,7 +33,6 @@ ENDIF ()
 
 target_link_libraries(Tests cryptoneat ${GTEST_LIBRARY} ${OPENSSL_LIBRARIES} ${LIBS} )
 
-
 add_test(NAME AllTests COMMAND Tests)
 
 file(COPY pem DESTINATION .)

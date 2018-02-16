@@ -6,6 +6,8 @@ LIBNAME = cryptoneat
 LIB = ./lib$(LIBNAME).a
 LIBINC = ./include/cryptoneat
 
+CONTAINER = $(shell echo "$(LIBNAME)_$(CXX)" | sed 's/++/pp/')
+IMAGE = littlemole/$(CONTAINER)
 
 #################################################
 # rule to compile all (default rule)
@@ -68,4 +70,25 @@ remove:
 release: remove ## make release build
 	cd src && make release -e -f Makefile 
 	cd t && make release -e -f Makefile 
+
+
+# docker stable testing environment
+
+image: ## build docker test image
+	docker build -t $(IMAGE) . -fDockerfile  --build-arg CXX=$(CXX) --build-arg BACKEND=$(BACKEND)
+
+clean-image: ## rebuild the docker test image from scratch
+	docker build -t $(IMAGE) . --no-cache -fDockerfile --build-arg CXX=$(CXX) --build-arg BACKEND=$(BACKEND)
+		
+bash: rmc image ## run the docker image and open a shell
+	docker run --name $(CONTAINER) -ti -e COMPILER=$(CXX) $(IMAGE) bash
+
+stop: ## stop running docker image, if any
+	-docker stop $(CONTAINER)
+	
+rmc: stop ## remove docker container, if any
+	-docker rm $(CONTAINER)
+
+rmi : ## remove existing docker image, if any
+	-docker rmi $(IMAGE)
 
