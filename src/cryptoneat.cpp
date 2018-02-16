@@ -35,17 +35,17 @@
 namespace cryptoneat {
 
 
-	class Mutex
-	{
-	public:
-		Mutex();
-		virtual ~Mutex();
-		virtual void aquire();
-		virtual int  aquired();
-		virtual void release();
-	private:
-		std::mutex               mutex_;
-	};
+class Mutex
+{
+public:
+	Mutex();
+	virtual ~Mutex();
+	virtual void aquire();
+	virtual int  aquired();
+	virtual void release();
+private:
+	std::mutex               mutex_;
+};
 
 }
 
