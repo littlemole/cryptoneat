@@ -12,10 +12,11 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(LINKERFLAGS "")
 set(STDLIB "")
+set(FLAGS "")
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     set(STDLIB "c++abi")
     set(LINKERFLAGS "-stdlib=libc++ -fcoroutines-ts  -std=c++14")
-    set(FLAGS "-stdlib=libc++ -fcoroutines-ts -D_RESUMABLE_FUNCTIONS_SUPPORTED")
+    set(FLAGS -stdlib=libc++ -fcoroutines-ts -D_RESUMABLE_FUNCTIONS_SUPPORTED)
 endif()
 
 set( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${LINKERFLAGS}" )
@@ -29,7 +30,8 @@ include_directories(${OPENSSL_INCLUDE_DIR})
 file(GLOB SOURCES "src/*.cpp")
 file(GLOB HEADERS "include/cryptoneat/*.h")
 
-add_compile_options("-O3 ${FLAGS}")
+add_compile_options("-O3")
+add_compile_options("${FLAGS}")
 
 add_library(cryptoneat STATIC ${SOURCES})
 
