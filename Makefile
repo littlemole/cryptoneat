@@ -6,7 +6,8 @@ LIBNAME = cryptoneat
 LIB = ./lib$(LIBNAME).a
 LIBINC = ./include/cryptoneat
 
-CONTAINER = $(shell echo "$(LIBNAME)_$(CXX)" | sed 's/++/pp/')
+BUILDCHAIN = make
+CONTAINER = $(shell echo "$(LIBNAME)_$(CXX)_$(BUILDCHAIN)" | sed 's/++/pp/')
 IMAGE = littlemole/$(CONTAINER)
 
 #################################################
@@ -75,10 +76,10 @@ release: remove ## make release build
 # docker stable testing environment
 
 image: ## build docker test image
-	docker build -t $(IMAGE) . -fDockerfile  --build-arg CXX=$(CXX) --build-arg BACKEND=$(BACKEND)
+	docker build -t $(IMAGE) . -fDockerfile  --build-arg CXX=$(CXX) --build-arg BUILDCHAIN=$(BUILDCHAIN)
 
 clean-image: ## rebuild the docker test image from scratch
-	docker build -t $(IMAGE) . --no-cache -fDockerfile --build-arg CXX=$(CXX) --build-arg BACKEND=$(BACKEND)
+	docker build -t $(IMAGE) . --no-cache -fDockerfile --build-arg CXX=$(CXX) --build-arg BUILDCHAIN=$(BUILDCHAIN)
 		
 bash: rmc image ## run the docker image and open a shell
 	docker run --name $(CONTAINER) -ti -e COMPILER=$(CXX) $(IMAGE) bash

@@ -29,9 +29,6 @@ RUN ln -s /usr/include/libcxxabi/__cxxabi_config.h /usr/include/c++/v1/__cxxabi_
 ARG CXX=g++
 ENV CXX=${CXX}
 
-ARG BACKEND=
-ENV BACKEND=${BACKEND}
-
 # compile gtest with given compiler
 RUN  cd /usr/src/gtest && \
   if [ "$CXX" = "g++" ] ; then \
@@ -40,11 +37,15 @@ RUN  cd /usr/src/gtest && \
   cmake -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_CXX_FLAGS="-std=c++14 -stdlib=libc++" . ; \
   fi && \
   make && \
-  ln -s /usr/src/gtest/libgtest.a /usr/lib/libgtest.a
+  ln -s /usr/src/gtest/libgtest.a /usr/lib/libgtest.a && \
+  ln -s /usr/src/gtest/libgtest_main.a /usr/lib/libgtest_main.a
 
 
 RUN mkdir -p /usr/local/src/cryptoneat
 ADD . /usr/local/src/cryptoneat
+
+ARG BUILDCHAIN=make
+ENV BUILDCHAIN=${BUILDCHAIN}
 
 RUN /usr/local/src/cryptoneat/docker/run.sh
 
