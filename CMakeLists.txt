@@ -34,7 +34,7 @@ endmacro()
 set(LINKERFLAGS "")
 set(STDLIB "")
 set(FLAGS "")
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
     set(STDLIB "c++abi")
     set(LINKERFLAGS "-stdlib=libc++ -fcoroutines-ts  -std=c++14")
     set(FLAGS -stdlib=libc++ -fcoroutines-ts -D_RESUMABLE_FUNCTIONS_SUPPORTED)
@@ -46,20 +46,21 @@ set( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${LINKERFLAGS}" )
 # os
 ############################################
 
+message(">>>>>>>>> ${CMAKE_BUILD_TYPE}")
 IF (UNIX)
 
-	SET(DEBUGFLAGS "-g "
-    SET(RELEASEFLAGS "-O3 "
+	SET(DEBUGFLAGS "-g ")
+    SET(RELEASEFLAGS "-O3 ")
 
 	SET(LIBS "pthread" "uuid" ${STDLIB})
 
 ELSEIF (WIN32)
-	SET(DEBUGFLAGS " "
-    SET(RELEASEFLAGS "-O3 "
+	SET(DEBUGFLAGS " ")
+    SET(RELEASEFLAGS "-O3 ")
 
     SET(LIBS "Ws2_32" "Rpcrt4" ${STDLIB})
 
-	if( ${CMAKE_BUILD_TYPE} STREQUAL "Release")
+	if( "${CMAKE_BUILD_TYPE}" STREQUAL "Release")
 		set(INSTALL_DEBUG "Off")
 	else()
 		set(INSTALL_RELEASE "Off")
@@ -114,10 +115,10 @@ file(COPY pem DESTINATION .)
 # install
 ############################################
 
-if( $INSTALL_RELEASE STREQUAL "On")
+if( "${INSTALL_RELEASE}" STREQUAL "On")
 	install(TARGETS cryptoneat DESTINATION lib)
 endif()
-if( $INSTALL_DEBUG STREQUAL "On")
+if( "${INSTALL_DEBUG}" STREQUAL "On")
 	install(TARGETS cryptoneatd DESTINATION lib)
 endif()
 
