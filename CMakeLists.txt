@@ -46,7 +46,6 @@ set( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${LINKERFLAGS}" )
 # os
 ############################################
 
-message(">>>>>>>>> ${CMAKE_BUILD_TYPE}")
 IF (UNIX)
 
 	SET(DEBUGFLAGS "-g ")
