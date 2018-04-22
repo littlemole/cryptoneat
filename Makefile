@@ -4,6 +4,7 @@ PREFIX=/usr/local
 
 LIBNAME = cryptoneat
 LIB = ./lib$(LIBNAME).a
+LIBD = ./lib${LIBNAME}d.a
 LIBINC = ./include/cryptoneat
 
 BUILDCHAIN = make
@@ -55,20 +56,21 @@ build: test
 # make install copies the lib to system folders
 #################################################
 
-install: release 
+install: all
 	-rm -rf $(DESTDIR)/$(PREFIX)/include/$(LIBNAME)
 	cp -r $(LIBINC) $(DESTDIR)/$(PREFIX)/include/$(LIBNAME)
-	cp $(LIB) $(DESTDIR)/$(PREFIX)/lib
+	cp $(LIBD) $(DESTDIR)/$(PREFIX)/lib
 	mkdir -p $(DESTDIR)/$(PREFIX)/lib/pkgconfig/
 	cp $(LIBNAME).pc $(DESTDIR)/$(PREFIX)/lib/pkgconfig/
-	
+	make -e release
+	cp $(LIB) $(DESTDIR)/$(PREFIX)/lib		
 
 remove: 
 	-rm -rf $(DESTDIR)/$(PREFIX)/include/$(LIBNAME)
 	-rm $(DESTDIR)/$(PREFIX)/lib/$(LIB)
 	-rm $(DESTDIR)/$(PREFIX)/lib/pkgconfig/$(LIBNAME).pc
 	
-release: clean remove ## make release build
+release: clean ## make release build
 	cd src && make release -e -f Makefile 
 	cd t && make release -e -f Makefile 
 
