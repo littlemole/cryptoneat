@@ -25,7 +25,10 @@ LIBS =  $(DEPS)
 #################################################
 
 # the shared lib
-LIB = ../lib$(shell pwd | xargs dirname | xargs basename).a
+LIBNAME = ../lib$(shell pwd | xargs dirname | xargs basename)
+LIB = $(LIBNAME)d.a
+release: override LIB = $(LIBNAME).a
+
 LIB_SRC = .
 LIB_BUILD = ./build
 
@@ -46,6 +49,7 @@ LIB_OBJFILES = $(LIB_SRCFILES:%.cpp=$(LIB_BUILD)/%.o)
 #################################################
 
 all: $(LIB) 
+	echo "----------------$(LIB)"
 
 #################################################
 # release rule 
@@ -70,6 +74,7 @@ $(LIB_BUILD)/%.o: $(LIB_SRC)/%.cpp
 #################################################
 
 $(LIB): $(LIB_OBJFILES)
+	echo "Building $(LIB)"
 	ar rcs $(LIB) $(LIB_OBJFILES)
 	ranlib $(LIB)
 

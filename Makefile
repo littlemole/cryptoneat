@@ -3,13 +3,14 @@ DESTDIR=/
 PREFIX=/usr/local
 
 LIBNAME = cryptoneat
-LIB = ./lib$(LIBNAME).a
-LIBD = ./lib${LIBNAME}d.a
+LIB = ./lib$(LIBNAME)d.a
+release: override LIB = ./lib${LIBNAME}.a
 LIBINC = ./include/cryptoneat
 
 BUILDCHAIN = make
 CONTAINER = $(shell echo "$(LIBNAME)_$(CXX)_$(BUILDCHAIN)" | sed 's/++/pp/')
 IMAGE = littlemole/$(CONTAINER)
+
 
 #################################################
 # rule to compile all (default rule)
@@ -23,6 +24,7 @@ all: $(LIB)
 #################################################
 
 $(LIB): ## make the library $(LIB)
+	echo "+++++++++++$(LIB)"
 	cd src && make -e -f Makefile 
 	
 test-build: ## make the test binaries
@@ -56,18 +58,20 @@ build: test
 # make install copies the lib to system folders
 #################################################
 
-install: all
+install: clean all
+	echo "LIB:$(LIB)"
 	-rm -rf $(DESTDIR)/$(PREFIX)/include/$(LIBNAME)
 	cp -r $(LIBINC) $(DESTDIR)/$(PREFIX)/include/$(LIBNAME)
-	cp $(LIBD) $(DESTDIR)/$(PREFIX)/lib
+	cp $(LIB) $(DESTDIR)/$(PREFIX)/lib
 	mkdir -p $(DESTDIR)/$(PREFIX)/lib/pkgconfig/
 	cp $(LIBNAME).pc $(DESTDIR)/$(PREFIX)/lib/pkgconfig/
+	make -e clean
 	make -e release
-	cp $(LIB) $(DESTDIR)/$(PREFIX)/lib		
+	cp libcryptoneat.a  $(DESTDIR)/$(PREFIX)/lib		
 
 remove: 
 	-rm -rf $(DESTDIR)/$(PREFIX)/include/$(LIBNAME)
-	-rm $(DESTDIR)/$(PREFIX)/lib/$(LIB)
+	-rm $(DESTDIR)/$(PREFIX)/lib/$(LIB)*
 	-rm $(DESTDIR)/$(PREFIX)/lib/pkgconfig/$(LIBNAME).pc
 	
 release: clean ## make release build
