@@ -31,6 +31,53 @@
 #include <thread>
 #include <map>
 
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+
+::EVP_CIPHER_CTX* EVP_CIPHER_CTX_new()
+{
+	::EVP_CIPHER_CTX* ctx = new ::EVP_CIPHER_CTX;
+	EVP_CIPHER_CTX_init(ctx);
+	return ctx;
+}
+
+void EVP_CIPHER_CTX_free(::EVP_CIPHER_CTX* ctx)
+{
+	delete ctx;
+}
+
+::HMAC_CTX* HMAC_CTX_new()
+{
+	::HMAC_CTX* ctx = new ::HMAC_CTX;
+	HMAC_CTX_init(ctx);
+	return ctx;
+}
+
+void HMAC_CTX_free(::HMAC_CTX* ctx)
+{
+	HMAC_CTX_cleanup(ctx);
+	delete ctx;
+}
+
+::EVP_MD_CTX* EVP_MD_CTX_new()
+{
+	::EVP_MD_CTX* ctx = new ::EVP_MD_CTX;
+	return ctx;
+}
+
+void EVP_MD_CTX_free(::EVP_MD_CTX* ctx)
+{
+	EVP_MD_CTX_cleanup(ctx);
+	delete ctx;
+}
+
+
+void DH_get0_key(::DH* dh, const BIGNUM** k, int unused)
+{
+	*k = dh->pub_key;	
+}
+
+#endif
+
 
 namespace cryptoneat {
 
@@ -415,18 +462,22 @@ namespace cryptoneat {
 		: cipher_(cipher), md_(md), pwd_(pwd)
 	{}
 
-	class EvpCipherCtx : public EVP_CIPHER_CTX
+	class EvpCipherCtx //: public EVP_CIPHER_CTX
 	{
 	public:
+	
+		EVP_CIPHER_CTX* ctx;
 
 		EvpCipherCtx()
 		{
-			EVP_CIPHER_CTX_init(this);
+			ctx=EVP_CIPHER_CTX_new();
+			EVP_CIPHER_CTX_init(ctx);
 		}
 
 		~EvpCipherCtx()
 		{
-			EVP_CIPHER_CTX_cleanup(this);
+			EVP_CIPHER_CTX_cleanup(ctx);
+			EVP_CIPHER_CTX_free(ctx);
 		}
 	};
 
@@ -472,7 +523,7 @@ namespace cryptoneat {
 		KeyIvFromPassword kiv(cipher_,salt,pwd_,md_);
 
 		if (!EVP_EncryptInit(
-			&ctx,
+			ctx.ctx,
 			openssl(cipher_),
 			&(kiv.key),
 			&(kiv.iv)
@@ -486,7 +537,7 @@ namespace cryptoneat {
 		uchar_buf outbuf(n);
 
 		if (EVP_EncryptUpdate(
-			&ctx,
+			ctx.ctx,
 			&outbuf, &n,
 			(unsigned char*)input.c_str(), input.size()
 		) != 1)
@@ -495,7 +546,7 @@ namespace cryptoneat {
 		}
 
 		int tlen = 0;
-		if (EVP_EncryptFinal(&ctx, (&outbuf) + n, &tlen) != 1)
+		if (EVP_EncryptFinal(ctx.ctx, (&outbuf) + n, &tlen) != 1)
 		{
 			throw SymCryptEx();
 		}
@@ -528,7 +579,7 @@ namespace cryptoneat {
 		KeyIvFromPassword kiv(cipher_,salt,pwd_,md_);
 
 		if (!EVP_DecryptInit(
-			&ctx,
+			ctx.ctx,
 			c,
 			&(kiv.key),
 			&(kiv.iv)
@@ -541,7 +592,7 @@ namespace cryptoneat {
 		uchar_buf outbuf(n + 1);
 
 		if (EVP_DecryptUpdate(
-			&ctx,
+			ctx.ctx,
 			&outbuf, &n,
 			(const unsigned char*)raw.c_str()+16, raw.size()-16
 		) != 1)
@@ -550,7 +601,7 @@ namespace cryptoneat {
 		}
 
 		int tlen = 0;
-		if (EVP_DecryptFinal(&ctx, &outbuf + n, &tlen) != 1)
+		if (EVP_DecryptFinal(ctx.ctx, &outbuf + n, &tlen) != 1)
 		{
 			throw SymCryptEx();
 		}
@@ -562,20 +613,18 @@ namespace cryptoneat {
 	Hmac::Hmac(const EVP_MD* md, const std::string& key)
 		: md_(md), key_(key)
 	{
-		::HMAC_CTX* ctx = new ::HMAC_CTX();
+		::HMAC_CTX* ctx = ::HMAC_CTX_new();
 
 		ctx_ = std::shared_ptr<HMAC_CTX>(
 			(HMAC_CTX*)ctx, 
 			[](HMAC_CTX* ctx) { 
 
 				::HMAC_CTX* c = openssl(ctx);	
-				HMAC_CTX_cleanup(c);
-				delete c;
+				::HMAC_CTX_free(c);
 			}
 		);
 
-		HMAC_CTX_init(ctx);
-		if (!HMAC_Init(ctx, key.c_str(), key.size(), openssl(md_)))
+		if (!HMAC_Init_ex(ctx, key.c_str(), key.size(), openssl(md_),0))
 		{
 			throw HmacEx();
 		}
@@ -790,13 +839,19 @@ namespace cryptoneat {
 		return true;
 	}
 
-	class SignatureCtx : public ::EVP_MD_CTX
+
+	class SignatureCtx //: public ::EVP_MD_CTX
 	{
 	public:
-
+		::EVP_MD_CTX* ctx;
+		
+		SignatureCtx()
+		{
+			ctx = EVP_MD_CTX_new();
+		}
 		~SignatureCtx()
 		{
-			EVP_MD_CTX_cleanup(this);
+			EVP_MD_CTX_free(ctx);
 		}
 	};
 
@@ -810,17 +865,18 @@ namespace cryptoneat {
 		::EVP_PKEY* pkey = openssl(pkey_);
 
 		SignatureCtx ctx;
-		EVP_SignInit(&ctx, openssl(md_));
+
+		EVP_SignInit(ctx.ctx, openssl(md_));
 		int size = EVP_PKEY_size(pkey);
 
-		if (!EVP_SignUpdate(&ctx, msg.c_str(), msg.size()))
+		if (!EVP_SignUpdate(ctx.ctx, msg.c_str(), msg.size()))
 		{
 			throw SignatureEx();
 		}
 
 		uchar_buf sig(size);
 		unsigned int len = 0;
-		if (!EVP_SignFinal(&ctx, &sig, &len, pkey))
+		if (!EVP_SignFinal(ctx.ctx, &sig, &len, pkey))
 		{
 			throw SignatureEx();
 		}
@@ -831,16 +887,16 @@ namespace cryptoneat {
 	bool Signature::verify(const std::string& msg, const std::string& sig)
 	{
 		SignatureCtx ctx;
-		int r = EVP_VerifyInit(&ctx, openssl(md_));
+		int r = EVP_VerifyInit(ctx.ctx, openssl(md_));
 
-		r = EVP_VerifyUpdate(&ctx, msg.c_str(), msg.size());
+		r = EVP_VerifyUpdate(ctx.ctx, msg.c_str(), msg.size());
 		if (!r)
 		{
 			//throw CryptoEx();
 			return false;
 		}
 		r = EVP_VerifyFinal(
-			&ctx,
+			ctx.ctx,
 			(unsigned char *)sig.c_str(),
 			(unsigned int)sig.size(),
 			openssl(pkey_)
@@ -855,13 +911,18 @@ namespace cryptoneat {
 		return r == 1;
 	}
 
-	class EnvelopeCtx : public EVP_CIPHER_CTX
+	class EnvelopeCtx //: public EVP_CIPHER_CTX
 	{
 	public:
-
+		::EVP_CIPHER_CTX* ctx;
+		
+		EnvelopeCtx()
+		{
+			ctx = EVP_CIPHER_CTX_new();
+		}
 		~EnvelopeCtx()
 		{
-			EVP_CIPHER_CTX_cleanup(this);
+			EVP_CIPHER_CTX_free(ctx);
 		}
 	};
 
@@ -890,7 +951,7 @@ namespace cryptoneat {
 
 		unsigned char* k = key.get();
 
-		if (!EVP_SealInit(&ctx, cipher, &k, (int*)&ekl, iv.get(), &pkey, 1))
+		if (!EVP_SealInit(ctx.ctx, cipher, &k, (int*)&ekl, iv.get(), &pkey, 1))
 		{
 			throw EnvelopeEx();
 		}
@@ -899,7 +960,7 @@ namespace cryptoneat {
 		uchar_buf outbuf(n + 1);
 
 		if (EVP_SealUpdate(
-			&ctx,
+			ctx.ctx,
 			&outbuf, &n,
 			(unsigned char*)msg.c_str(), msg.size()
 		) != 1)
@@ -908,7 +969,7 @@ namespace cryptoneat {
 		}
 
 		int tlen = 0;
-		if (EVP_SealFinal(&ctx, &outbuf + n, &tlen) != 1)
+		if (EVP_SealFinal(ctx.ctx, &outbuf + n, &tlen) != 1)
 		{
 			throw EnvelopeEx();
 		}
@@ -942,7 +1003,7 @@ namespace cryptoneat {
 		int headerlen = sizeof(ekl)+ekl+EVP_CIPHER_iv_length(cipher);
 		std::string ciphertxt = msg.substr(headerlen);
 
-		if (!EVP_OpenInit(&ctx,cipher, &key, ekl, &iv, openssl(rsakey)))
+		if (!EVP_OpenInit(ctx.ctx,cipher, &key, ekl, &iv, openssl(rsakey)))
 		{
 			throw EnvelopeEx();
 		}
@@ -951,7 +1012,7 @@ namespace cryptoneat {
 		uchar_buf outbuf(n + 1);
 
 		if (EVP_OpenUpdate(
-			&ctx,
+			ctx.ctx,
 			&outbuf, &n,
 			(unsigned char*)ciphertxt.c_str(), ciphertxt.size()
 		) != 1)
@@ -960,7 +1021,7 @@ namespace cryptoneat {
 		}
 
 		int tlen = 0;
-		if (EVP_OpenFinal(&ctx, &outbuf + n, &tlen) != 1)
+		if (EVP_OpenFinal(ctx.ctx, &outbuf + n, &tlen) != 1)
 		{
 			throw EnvelopeEx();
 		}
@@ -1010,7 +1071,12 @@ namespace cryptoneat {
 	std::string DiffieHellman::initialize(size_t s)
 	{
 		std::cerr << "DiffieHellman generate" << std::endl;
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 		dh_ = crypto(DH_generate_parameters(s, 5, NULL, NULL));
+#else
+		dh_ = crypto(DH_new());
+		DH_generate_parameters_ex(openssl(dh_),s,5,NULL);
+#endif		
 		std::cerr << "DiffieHellman generate done" << std::endl;
 
 		return params();
@@ -1041,6 +1107,7 @@ namespace cryptoneat {
 	{
 		BIGNUM* bn = 0;
 		int r = BN_hex2bn(&bn, pubKey.c_str());
+		
 		int size = DH_size(openssl(dh_));
 
 		uchar_buf buf(size);
@@ -1051,7 +1118,9 @@ namespace cryptoneat {
 
 	std::string DiffieHellman::pubKey()
 	{
-		char* c = BN_bn2hex((openssl(dh_))->pub_key);
+		const BIGNUM* k = 0;
+		DH_get0_key(openssl(dh_),&k,0);
+		char* c = BN_bn2hex(k);//(openssl(dh_))->pub_key);
 		std::string result(c);
 		OPENSSL_free(c);
 		return result;
@@ -1100,8 +1169,12 @@ namespace cryptoneat {
 
 	Mutex* SSLUser::mutexe()
 	{
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 		static Mutex mutex_[CRYPTO_NUM_LOCKS];
 		return mutex_;
+#else
+		return nullptr;
+#endif		
 	}
 
 	CRYPTO_dynlock_value* SSLUser::dyn_create_function(const char* file, int line)
@@ -1152,11 +1225,13 @@ namespace cryptoneat {
 
 	SSLUser::SSLUser()
 	{
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 		CRYPTO_set_locking_callback(locking_function);
 		CRYPTO_set_id_callback(id_function);
 		CRYPTO_set_dynlock_create_callback(dyn_create_function);
 		CRYPTO_set_dynlock_lock_callback(dyn_lock_function);
 		CRYPTO_set_dynlock_destroy_callback(dyn_destroy_function);
+#endif		
 		SSL_library_init();
 		ERR_load_BIO_strings();
 		//	SSL_load_error_strings();
@@ -1177,7 +1252,9 @@ namespace cryptoneat {
 	{
 		ENGINE_cleanup();
 		CONF_modules_unload(1);
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 		ERR_remove_state(1);
+#endif		
 		ERR_free_strings();
 		EVP_cleanup();
 		CRYPTO_cleanup_all_ex_data();

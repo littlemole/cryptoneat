@@ -1,6 +1,9 @@
 DEBUG = -g 
 release : override DEBUG = -O3
 
+LIB = ../libcryptoneatd.a
+release : override LIB = ../libcryptoneat.a
+
 DEFAULT_OPTS = -std=c++14
 DEFAULT_LIBS = 
 
@@ -19,7 +22,7 @@ TEST_BUILD = ./build
 CPPFLAGS = -Wall -I../include $(DEBUG) $(REENTRANT) $(OPTIONS) 
 DEPS = -lssl -lcrypto -lpthread
 
-TEST_LIBS  = /usr/lib/libgtest.a  ../libcryptoneat.a -luuid  $(DEPS) $(DEFAULT_LIBS)
+TEST_LIBS  = /usr/lib/libgtest.a  $(LIB) -luuid  $(DEPS) $(DEFAULT_LIBS)
 
 
 # Objects for the test executable
