@@ -5,7 +5,7 @@ release : override DEBUG = -O3
 DEFAULT_OPTS = -std=c++14
 DEFAULT_LIBS = 
 
-ifeq ($(CXX),clang++-5.0)
+ifneq ($(CXX),g++)
 DEFAULT_LIBS = -stdlib=libc++ -fcoroutines-ts  -lc++abi #-std=c++14
 DEFAULT_OPTS = -std=c++14 -stdlib=libc++ -fcoroutines-ts -D_RESUMABLE_FUNCTIONS_SUPPORTED 
 endif
