@@ -2,7 +2,7 @@
 DEBUG = -g -DMOL_PROMISE_DEBUG
 release : override DEBUG = -O3
 
-DEFAULT_OPTS = -std=c++14
+DEFAULT_OPTS = -std=c++17
 DEFAULT_LIBS = 
 
 ifneq ($(CXX),g++)

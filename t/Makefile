@@ -4,7 +4,7 @@ release : override DEBUG = -O3
 LIB = ../libcryptoneatd.a
 release : override LIB = ../libcryptoneat.a
 
-DEFAULT_OPTS = -std=c++14
+DEFAULT_OPTS = -std=c++17
 DEFAULT_LIBS = 
 
 ifneq ($(CXX),g++)
