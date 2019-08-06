@@ -1,6 +1,9 @@
 # cryptoneat
 openssl with cpp for mere mortals
 
+# doxygen documentation
+
+[doxydocs](https://littlemole.github.io/cryptoneat/index.html)
 
 # features
 
