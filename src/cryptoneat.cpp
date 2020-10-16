@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <stdio.h>  
 #include <limits.h>  
+#include <Winsock2.h>
 #endif
 
 #include "cryptoneat/cryptoneat.h"
