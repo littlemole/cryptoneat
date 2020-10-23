@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['cryptoneat',['cryptoneat',['../index.html',1,'']]]
+  ['cryptoneat_84',['cryptoneat',['../index.html',1,'']]]
 ];

@@ -3,14 +3,14 @@
   <compound kind="file">
     <name>base64.h</name>
     <path>/home/mike/workspace/cryptoneat/include/cryptoneat/</path>
-    <filename>base64_8h</filename>
+    <filename>base64_8h.html</filename>
     <class kind="class">cryptoneat::Base64</class>
     <class kind="class">cryptoneat::Base64Url</class>
   </compound>
   <compound kind="file">
     <name>cryptoneat.h</name>
     <path>/home/mike/workspace/cryptoneat/include/cryptoneat/</path>
-    <filename>cryptoneat_8h</filename>
+    <filename>cryptoneat_8h.html</filename>
     <class kind="class">cryptoneat::Digest</class>
     <class kind="class">cryptoneat::SymCrypt</class>
     <class kind="class">cryptoneat::Envelope</class>
@@ -88,7 +88,7 @@
   <compound kind="file">
     <name>uuid.h</name>
     <path>/home/mike/workspace/cryptoneat/include/cryptoneat/</path>
-    <filename>uuid_8h</filename>
+    <filename>uuid_8h.html</filename>
     <class kind="class">cryptoneat::uuid</class>
   </compound>
   <compound kind="class">
