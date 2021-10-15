@@ -121,7 +121,7 @@ std::string Base64Url::encode(const std::string& s)
     for ( size_t i = 0; i < input.size(); i++)
     {
         switch( input[i] )
-        {
+        { 
             case '+' : 
             {
                 oss << '-';
@@ -131,7 +131,12 @@ std::string Base64Url::encode(const std::string& s)
             {
                 oss << '_';
                 break;
-            }          
+            }         
+//            case '=' :
+//            {
+//                oss << "%3D";
+//                break;
+//            }  
             default : 
             {
                 oss << input[i];
