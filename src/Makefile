@@ -2,15 +2,15 @@
 DEBUG = -g -DMOL_PROMISE_DEBUG
 release : override DEBUG = -O3
 
-DEFAULT_OPTS = -std=c++17
+DEFAULT_OPTS = -std=c++20 -fcoroutines
 DEFAULT_LIBS = 
 
 ifneq ($(CXX),g++)
-DEFAULT_LIBS = -stdlib=libc++ -fcoroutines-ts  -lc++abi #-std=c++14
-DEFAULT_OPTS = -std=c++14 -stdlib=libc++ -fcoroutines-ts -D_RESUMABLE_FUNCTIONS_SUPPORTED 
+DEFAULT_LIBS = -stdlib=libc++ -fcoroutines-ts  -lc++abi -std=c++20
+DEFAULT_OPTS = -std=c++20 -stdlib=libc++ -fcoroutines-ts
 endif
 
-OPTIONS = -std=c++14 -fpic -Wno-write-strings -pthread -D_REENTRANT $(DEFAULT_OPTS)
+OPTIONS = -fpic -Wno-write-strings -pthread -D_REENTRANT $(DEFAULT_OPTS)
 
 # compile flags
 CPPFLAGS = -Wall -I../include $(DEBUG) $(REENTRANT) $(INCLUDE) $(OPTIONS) 
