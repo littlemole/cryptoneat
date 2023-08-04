@@ -435,7 +435,7 @@ TEST_F(CryptoNeatTest, RSAKeyGenTestPEM)
 TEST_F(CryptoNeatTest, dhTest) 
 {
     DiffieHellman dh1;
-    std::string dhp = dh1.initialize(32);
+    std::string dhp = dh1.initialize(1024);
 
     std::cerr << dh1.generate() << std::endl;
     std::cerr << dh1.pubKey() << std::endl;
@@ -505,6 +505,7 @@ TEST_F(CryptoNeatTest, uuidTest)
 int main(int argc, char **argv) 
 {    
 	SSLUser sslUser;
+
 
     ::testing::InitGoogleTest(&argc, argv);
     int r = RUN_ALL_TESTS();

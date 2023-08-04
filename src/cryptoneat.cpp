@@ -76,6 +76,10 @@ void DH_get0_key(::DH* dh, const BIGNUM** k, int unused)
 {
 	*k = dh->pub_key;	
 }
+#endif
+
+#if OPENSSL_VERSION_MAJOR >= 3
+#include <openssl/provider.h>
 
 #endif
 
@@ -169,6 +173,17 @@ namespace cryptoneat {
 		return reinterpret_cast<const EVP_MD*>(EVP_get_digestbyname(md.c_str()));
 	}
 
+	const EVP_MD* digest(const std::string& md, const std::string& provider)
+	{
+#if OPENSSL_VERSION_MAJOR >= 3
+
+		return reinterpret_cast<const EVP_MD*>(EVP_MD_fetch(NULL,md.c_str(),provider.c_str()));
+#else
+		return digest(md);
+#endif
+
+	}
+
 	EVP_PKEY* crypto(::EVP_PKEY* ctx)
 	{
 		return reinterpret_cast<EVP_PKEY*>(ctx);
@@ -256,7 +271,25 @@ namespace cryptoneat {
 
 		cipher_factory cf = ciphermap[c];
 
-		return crypto(cf());
+		const ::EVP_CIPHER* ciph = cf();
+
+		printf("CIPHER: %s %i\r\n", c.c_str(), ciph);
+
+		if(ciph == 0)
+		{
+
+#if OPENSSL_VERSION_MAJOR >= 3
+
+			ciph = EVP_CIPHER_fetch(NULL,c.c_str(),"provider=legacy");
+#endif
+
+			if(ciph == 0)
+			{
+				throw CipherNotFoundEx();
+			}
+		}
+
+		return crypto(ciph);
 	}
 
 	
@@ -530,6 +563,7 @@ namespace cryptoneat {
 			&(kiv.iv)
 		))
 		{
+			printf("%s", ERR_error_string(ERR_get_error(), NULL));
 			throw SymCryptEx();
 		}
 
@@ -1086,6 +1120,12 @@ namespace cryptoneat {
 	std::string DiffieHellman::params()
 	{
 		int len = i2d_DHparams(openssl(dh_), NULL);
+
+		printf( "DH compute len: %i \r\n", len );
+
+					printf("%s", ERR_error_string(ERR_get_error(), NULL));
+
+
 		uchar_buf buf(len);
 		unsigned char* c = &buf;
 		i2d_DHparams(openssl(dh_), &c);
@@ -1110,6 +1150,8 @@ namespace cryptoneat {
 		int r = BN_hex2bn(&bn, pubKey.c_str());
 		
 		int size = DH_size(openssl(dh_));
+
+		printf( "DH compute size: %i \r\n", size );
 
 		uchar_buf buf(size);
 		r = DH_compute_key(&buf, bn, openssl(dh_));
@@ -1247,6 +1289,12 @@ namespace cryptoneat {
 			// seed from stack as urandom has not enough entropie
 			RAND_seed(buf, sizeof buf);
 		}
+
+#if OPENSSL_VERSION_MAJOR >= 3
+
+		auto legacy = OSSL_PROVIDER_load(NULL, "legacy");
+#endif
+
 	}
 
 	SSLUser::~SSLUser()

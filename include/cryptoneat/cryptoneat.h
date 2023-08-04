@@ -30,6 +30,8 @@ std::string fromHex(const std::string& hex);
 
 //! Message Digest algorithm, ie "md5", "sha1" etc
 const EVP_MD* digest(const std::string& md);
+const EVP_MD* digest(const std::string& md, const std::string& provider);
+
 
 //! Cipher algorithm, ie "rc4", "aes_128_cbc", "des_ede3_cbc"
 const EVP_CIPHER* cipher(const std::string& c);
