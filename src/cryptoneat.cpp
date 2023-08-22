@@ -199,20 +199,6 @@ namespace cryptoneat {
 		return reinterpret_cast<::EVP_PKEY**>(ctx);
 	}
 
-	DH* crypto(::DH* ctx)
-	{
-		return reinterpret_cast<DH*>(ctx);
-	}
-
-	::DH* openssl(DH* ctx)
-	{
-		return reinterpret_cast<::DH*>(ctx);
-	}
-
-	::DH** openssl(DH** ctx)
-	{
-		return reinterpret_cast<::DH**>(ctx);
-	}
 
 	EVP_MD_CTX* crypto(::EVP_MD_CTX* ctx)
 	{
@@ -224,6 +210,8 @@ namespace cryptoneat {
 		return reinterpret_cast<::EVP_MD_CTX*>(ctx);
 	}
 
+/*
+
 	HMAC_CTX* crypto(::HMAC_CTX* ctx)
 	{
 		return reinterpret_cast<HMAC_CTX*>(ctx);
@@ -233,6 +221,20 @@ namespace cryptoneat {
 	{
 		return reinterpret_cast<::HMAC_CTX*>(ctx);
 	}
+*/
+
+	EVP_MAC_CTX* crypto(::EVP_MAC_CTX* ctx)
+	{
+		return reinterpret_cast<EVP_MAC_CTX*>(ctx);
+	}
+
+	::EVP_MAC_CTX* openssl(EVP_MAC_CTX* ctx)
+	{
+		return reinterpret_cast<::EVP_MAC_CTX*>(ctx);
+	}
+
+
+
 
 
 	const EVP_MD* crypto(const ::EVP_MD* md)
@@ -273,20 +275,11 @@ namespace cryptoneat {
 
 		const ::EVP_CIPHER* ciph = cf();
 
-		printf("CIPHER: %s %i\r\n", c.c_str(), ciph);
+		//printf("CIPHER: %s %li\r\n", c.c_str(), (const long)ciph);
 
 		if(ciph == 0)
 		{
-
-#if OPENSSL_VERSION_MAJOR >= 3
-
-			ciph = EVP_CIPHER_fetch(NULL,c.c_str(),"provider=legacy");
-#endif
-
-			if(ciph == 0)
-			{
 				throw CipherNotFoundEx();
-			}
 		}
 
 		return crypto(ciph);
@@ -648,32 +641,33 @@ namespace cryptoneat {
 	Hmac::Hmac(const EVP_MD* md, const std::string& key)
 		: md_(md), key_(key)
 	{
-		::HMAC_CTX* ctx = ::HMAC_CTX_new();
+		::EVP_MAC_CTX* ctx = ::EVP_MAC_CTX_new(0);
 
-		ctx_ = std::shared_ptr<HMAC_CTX>(
-			(HMAC_CTX*)ctx, 
-			[](HMAC_CTX* ctx) { 
+		ctx_ = std::shared_ptr<EVP_MAC_CTX>(
+			(EVP_MAC_CTX*)ctx, 
+			[](EVP_MAC_CTX* ctx) { 
 
-				::HMAC_CTX* c = openssl(ctx);	
-				::HMAC_CTX_free(c);
+				::EVP_MAC_CTX* c = openssl(ctx);	
+				::EVP_MAC_CTX_free(c);
 			}
 		);
 
-		if (!HMAC_Init_ex(ctx, key.c_str(), key.size(), openssl(md_),0))
+/*		if (!EVP_MAC_init(ctx, (const unsigned char*)key.c_str(), key.size(), openssl(md_),0))
 		{
 			throw HmacEx();
 		}
+		*/
 	}
 
 	std::string Hmac::hash(const std::string& msg)
 	{
-		::HMAC_CTX* ctx = openssl(ctx_.get());
+		::EVP_MAC_CTX* ctx = openssl(ctx_.get());
 
-		unsigned int len = EVP_MD_size(openssl(md_));
+		size_t len = EVP_MD_size(openssl(md_));
 
 		uchar_buf buffer(len);
 
-		if (HMAC_Update(
+		if (EVP_MAC_update(
 			ctx,
 			(const unsigned char *)msg.c_str(), msg.size()
 		) != 1)
@@ -681,7 +675,7 @@ namespace cryptoneat {
 			throw HmacEx();
 		}
 
-		if (HMAC_Final(ctx, &buffer, &len) != 1)
+		if (EVP_MAC_final(ctx, &buffer, &len, len) != 1)
 		{
 			throw HmacEx();
 		}
@@ -820,36 +814,15 @@ namespace cryptoneat {
 
 	bool generate_rsa_pair(PrivateKey& privKey, PublicKey& pubKey, int bits)
 	{
-		int             ret = 0;
-		RSA             *r = NULL;
-		BIGNUM          *bne = NULL;
-		unsigned long   e = RSA_F4;
 
-		bne = BN_new();
-		ret = BN_set_word(bne, e);
-		if (ret != 1)
-		{
-			BN_free(bne);
-			throw RsaKeyEx();
-		}
-
-		r = RSA_new();
-		ret = RSA_generate_key_ex(r, bits, bne, NULL);
-		if (ret != 1)
-		{
-			RSA_free(r);
-			BN_free(bne);
-			throw RsaKeyEx();
-		}
+		::EVP_PKEY* pkey = EVP_RSA_gen(bits);
 
 		unsigned char buf[2048];
-		unsigned char * tmp = buf;
-		//	int len = i2d_RSAPublicKey(r, &tmp); // nope, the other one
-		int len = i2d_RSA_PUBKEY(r, &tmp);
+		unsigned char *tmp = buf;
+		//	int len = i2d_RSAPublicKey(pkey, &tmp); // nope, the other one
+		int len = i2d_PublicKey(pkey, &tmp);
 		if (len <= 0)
 		{
-			RSA_free(r);
-			BN_free(bne);
 			throw RsaKeyEx();
 		}
 
@@ -857,19 +830,15 @@ namespace cryptoneat {
 		pubKey.fromDER(pubKeyDer);
 
 		tmp = buf;
-		len = i2d_RSAPrivateKey(r, &tmp);
+		len = i2d_PrivateKey(pkey, &tmp);
 		if (len <= 0)
 		{
-			RSA_free(r);
-			BN_free(bne);
 			throw RsaKeyEx();
 		}
 
 		std::string privKeyDer((char*)buf, len);
 		privKey.fromDER(EVP_PKEY_RSA, privKeyDer);
 
-		RSA_free(r);
-		BN_free(bne);
 
 		return true;
 	}
@@ -1065,110 +1034,6 @@ namespace cryptoneat {
 		return std::string((char*)&outbuf, n);
 	}
 
-	DiffieHellman::DiffieHellman()
-		: dh_(0)
-	{
-	}
-
-	DiffieHellman::DiffieHellman(const std::string& params)
-		: dh_(0)
-	{
-		const unsigned char* c = (const unsigned char *)params.c_str();
-		d2i_DHparams(openssl(&dh_), &c, params.size());
-	}
-
-	void DiffieHellman::load(const std::string& file)
-	{
-		FILE* fp = 0;
-		fp = fopen(file.c_str(), "r");
-		if (!fp)
-		{
-			throw DhEx();
-		}
-
-		PEM_read_DHparams(fp, openssl(&dh_), NULL, NULL);
-		fclose(fp);
-	}
-
-	void DiffieHellman::write(const std::string& file)
-	{
-		FILE* fp = 0;
-		fp = fopen(file.c_str(), "w");
-		if (!fp)
-		{
-			throw DhEx();
-		}
-
-		PEM_write_DHparams(fp, openssl(dh_));
-		fclose(fp);
-	}
-
-	std::string DiffieHellman::initialize(size_t s)
-	{
-		std::cerr << "DiffieHellman generate" << std::endl;
-#if OPENSSL_VERSION_NUMBER < 0x10100000L
-		dh_ = crypto(DH_generate_parameters(s, 5, NULL, NULL));
-#else
-		dh_ = crypto(DH_new());
-		DH_generate_parameters_ex(openssl(dh_),s,5,NULL);
-#endif		
-		std::cerr << "DiffieHellman generate done" << std::endl;
-
-		return params();
-	}
-
-	std::string DiffieHellman::params()
-	{
-		int len = i2d_DHparams(openssl(dh_), NULL);
-
-		printf( "DH compute len: %i \r\n", len );
-
-					printf("%s", ERR_error_string(ERR_get_error(), NULL));
-
-
-		uchar_buf buf(len);
-		unsigned char* c = &buf;
-		i2d_DHparams(openssl(dh_), &c);
-		return buf.toString(len);
-	}
-
-	DiffieHellman::~DiffieHellman()
-	{
-		DH_free(openssl(dh_));
-	}
-
-
-	bool DiffieHellman::generate()
-	{
-		int r = DH_generate_key(openssl(dh_));
-		return r == 1;
-	}
-
-	std::string DiffieHellman::compute(const std::string& pubKey)
-	{
-		BIGNUM* bn = 0;
-		int r = BN_hex2bn(&bn, pubKey.c_str());
-		
-		int size = DH_size(openssl(dh_));
-
-		printf( "DH compute size: %i \r\n", size );
-
-		uchar_buf buf(size);
-		r = DH_compute_key(&buf, bn, openssl(dh_));
-		BN_free(bn);
-		return buf.toString(r);
-	}
-
-	std::string DiffieHellman::pubKey()
-	{
-		const BIGNUM* k = 0;
-		DH_get0_key(openssl(dh_),&k,0);
-		char* c = BN_bn2hex(k);//(openssl(dh_))->pub_key);
-		std::string result(c);
-		OPENSSL_free(c);
-		return result;
-	}
-
 	std::string Password::hash(const std::string& plaintxt)
 	{
 		std::string salt = toHex(nonce(8)).substr(0, 8);
@@ -1276,7 +1141,10 @@ namespace cryptoneat {
 		CRYPTO_set_dynlock_destroy_callback(dyn_destroy_function);
 #endif		
 		SSL_library_init();
+#if OPENSSL_VERSION_MAJOR < 3
+
 		ERR_load_BIO_strings();
+#endif
 		//	SSL_load_error_strings();
 		OpenSSL_add_all_algorithms();
 
@@ -1290,10 +1158,6 @@ namespace cryptoneat {
 			RAND_seed(buf, sizeof buf);
 		}
 
-#if OPENSSL_VERSION_MAJOR >= 3
-
-		auto legacy = OSSL_PROVIDER_load(NULL, "legacy");
-#endif
 
 	}
 

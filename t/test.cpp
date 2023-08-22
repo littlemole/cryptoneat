@@ -179,10 +179,10 @@ TEST_F(CryptoNeatTest, bfTest)
 
 	for(int i = 0; i < 1000; i++)
 	{
-		SymCrypt encrypt(cipher("bf_cbc"), key);
+		SymCrypt encrypt(cipher("aes_128_cbc"), key);
 		std::string ciph = encrypt.encrypt(input);
 
-		SymCrypt decrypt(cipher("bf_cbc"), key);
+		SymCrypt decrypt(cipher("aes_128_cbc"), key);
 		std::string plain = decrypt.decrypt(fromHex(toHex(ciph)));
 
 		EXPECT_EQ(input,plain);
@@ -196,13 +196,13 @@ TEST_F(CryptoNeatTest, rc4Test)
     std::string input = "a well known secret";
     std::string key   = "the secret secret key";
 
-    SymCrypt encrypt(cipher("rc4"),key);
+    SymCrypt encrypt(cipher("des_ede3_cfb1"),key);
     std::string ciph = encrypt.encrypt(input);
 
     std::cerr << ciph.substr(0,8) << std::endl;
     std::cerr << toHex(ciph) << std::endl;
 
-    SymCrypt decrypt(cipher("rc4"), key);
+    SymCrypt decrypt(cipher("des_ede3_cfb1"), key);
     std::string plain = decrypt.decrypt(ciph);
 
     EXPECT_EQ(input,plain);
@@ -431,51 +431,6 @@ TEST_F(CryptoNeatTest, RSAKeyGenTestPEM)
     EXPECT_EQ(true,verified);
 }
 
-
-TEST_F(CryptoNeatTest, dhTest) 
-{
-    DiffieHellman dh1;
-    std::string dhp = dh1.initialize(1024);
-
-    std::cerr << dh1.generate() << std::endl;
-    std::cerr << dh1.pubKey() << std::endl;
-
-    DiffieHellman dh2(dhp);
-
-    std::cerr << dh2.generate() << std::endl;
-    std::cerr << dh2.pubKey() << std::endl;
-
-    std::string secret1 = dh2.compute(dh1.pubKey());
-    std::cerr << toHex(secret1) << std::endl;
-
-    std::string secret2 = dh1.compute(dh2.pubKey());
-    std::cerr << toHex(secret2) << std::endl;
-
-    EXPECT_EQ(secret1,secret2);
-}
-
-TEST_F(CryptoNeatTest, dhTest2) 
-{
-    DiffieHellman dh1;
-    dh1.load("pem/dh.pem");
-
-    std::cerr << dh1.generate() << std::endl;
-    std::cerr << dh1.pubKey() << std::endl;
-
-    DiffieHellman dh2;
-    dh2.load("pem/dh.pem");
-
-    std::cerr << dh2.generate() << std::endl;
-    std::cerr << dh2.pubKey() << std::endl;
-
-    std::string secret1 = dh2.compute(dh1.pubKey());
-    std::cerr << toHex(secret1) << std::endl;
-
-    std::string secret2 = dh1.compute(dh2.pubKey());
-    std::cerr << toHex(secret2) << std::endl;
-
-    EXPECT_EQ(secret1,secret2);
-}
 
 
 TEST_F(CryptoNeatTest, pwdTest)

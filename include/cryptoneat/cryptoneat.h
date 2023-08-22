@@ -14,10 +14,9 @@ namespace cryptoneat {
 // forward opaque types
 struct EVP_MD;
 struct EVP_MD_CTX;
+struct EVP_MAC_CTX;
 struct EVP_CIPHER;
 struct EVP_PKEY;
-struct HMAC_CTX;
-struct DH;
 class Mutex;
 
 
@@ -128,7 +127,7 @@ public:
 private:
     const EVP_MD* md_;
     std::string key_;
-    std::shared_ptr<HMAC_CTX> ctx_;
+    std::shared_ptr<EVP_MAC_CTX> ctx_;
 };
 
 //! crypto private key (usually from PEM or DER)
@@ -244,30 +243,6 @@ public:
 private:
     const EVP_MD* md_;
     EVP_PKEY* pkey_;
-};
-
-//! DH
-//!
-//! Diffie+Hellman helper
-
-class DiffieHellman
-{
-public:
-    DiffieHellman();
-    DiffieHellman(const std::string& params);
-    ~DiffieHellman();
-    
-    void load(const std::string& fp);
-    void write(const std::string& fp);
-
-    std::string initialize(size_t s);        
-    bool generate();
-    
-    std::string compute(const std::string& pubKey );
-    std::string pubKey();
-    std::string params();
-private:
-    DH* dh_;
 };
 
 //! secure password with openssl (for persistence, using salt(n=8)
