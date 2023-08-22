@@ -70,6 +70,8 @@ class SymCrypt
 {
 public:
 
+    //! construct a SymCrypt object using aes_256_cbc and secret password. uses sha256
+    SymCrypt(  const std::string& pwd);
     //! construct a SymCrypt object using given cipher and secret password. uses sha256
     SymCrypt( const EVP_CIPHER* cipher, const std::string& pwd);
     //! construct a SymCrypt object using given cipher, secret password using the specified message digest
@@ -95,6 +97,9 @@ private:
 class Envelope
 {
 public:
+    //! construct a Envelope object using aes_256_cbc cipher
+    Envelope();
+
     //! construct a Envelope object using specified cipher
     Envelope(const EVP_CIPHER* cipher);
     
@@ -116,7 +121,7 @@ class Hmac
 {
 public:
     //! construct HMAC using gven message digest and shared secret
-    Hmac(const EVP_MD* md, const std::string& key);
+    Hmac(const std::string& dig, const std::string& key);
     
     //! compute HMAC hash for message
     std::string hash(const std::string& msg);
@@ -125,7 +130,7 @@ public:
     Hmac& operator=(const Hmac& rhs) = delete;
 
 private:
-    const EVP_MD* md_;
+    std::string digest_;
     std::string key_;
     std::shared_ptr<EVP_MAC_CTX> ctx_;
 };
@@ -148,7 +153,12 @@ public:
     {
         return pkey_;
     }
-    
+
+    operator EVP_PKEY** ()
+    {
+        return &pkey_;
+    }
+
     //! return key in DER binary format
     std::string toDER();
     //! return key in PEM text format
@@ -161,6 +171,9 @@ public:
 
     PrivateKey(const PrivateKey& d) = delete;
     PrivateKey& operator=(const PrivateKey& rhs) = delete;
+
+    std::string get_public_key_der();
+    std::string get_public_key_pem();
 
 	//! key identifiers. has to be specified to load from DER format
 
@@ -201,7 +214,12 @@ public:
     {
         return pkey_;
     }
-    
+
+    operator EVP_PKEY** ()
+    {
+        return &pkey_;
+    }
+
     //! return key to DER binary format
     std::string toDER();
     //! return key in PEM text format
@@ -229,6 +247,7 @@ bool generate_rsa_pair(PrivateKey& privKey, PublicKey& pubKey, int bits = 2048);
 class Signature
 {
 public:
+    Signature(EVP_PKEY* key);
     //! construct Signature object for given msg digest and public/private key
     Signature(const EVP_MD* md,EVP_PKEY* key);
 
@@ -243,6 +262,22 @@ public:
 private:
     const EVP_MD* md_;
     EVP_PKEY* pkey_;
+};
+
+class DiffieHellman
+{
+public:
+
+    DiffieHellman() {}
+    DiffieHellman(const std::string& params);
+
+    std::string generate();
+    std::string secret(const std::string& peerKeyPEM);
+
+    std::string get_public_key();
+
+private:
+    PrivateKey dhparams_;
 };
 
 //! secure password with openssl (for persistence, using salt(n=8)

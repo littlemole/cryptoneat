@@ -480,6 +480,9 @@ namespace cryptoneat {
 #endif
 
 
+	SymCrypt::SymCrypt( const std::string& pwd)
+		: SymCrypt( cipher("aes_256_cbc"),pwd,digest("sha256") )
+	{}
 
 	SymCrypt::SymCrypt(const EVP_CIPHER* cipher, const std::string& pwd)
 		: SymCrypt( cipher,pwd,digest("sha256") )
@@ -638,10 +641,19 @@ namespace cryptoneat {
 		return std::string((char*)&outbuf, n);
 	}
 
-	Hmac::Hmac(const EVP_MD* md, const std::string& key)
-		: md_(md), key_(key)
+	Hmac::Hmac(const std::string& dig, const std::string& key)
+		: digest_(dig), key_(key)
 	{
-		::EVP_MAC_CTX* ctx = ::EVP_MAC_CTX_new(0);
+		::EVP_MAC *mac = 0;
+		::EVP_MAC_CTX* ctx = 0;
+
+		mac = EVP_MAC_fetch(0, "hmac",0 );
+		if ( mac == NULL ) 
+		{
+			throw HmacEx();
+		}
+
+		if ( (ctx = EVP_MAC_CTX_new(mac)) == NULL) throw HmacEx();
 
 		ctx_ = std::shared_ptr<EVP_MAC_CTX>(
 			(EVP_MAC_CTX*)ctx, 
@@ -652,18 +664,26 @@ namespace cryptoneat {
 			}
 		);
 
-/*		if (!EVP_MAC_init(ctx, (const unsigned char*)key.c_str(), key.size(), openssl(md_),0))
+		EVP_MAC_free(mac);
+
+		OSSL_PARAM macparams[2] = { 
+		    OSSL_PARAM_construct_utf8_string("digest", (char *)dig.c_str(), 0),
+            OSSL_PARAM_END 
+		};
+
+		EVP_MAC_CTX_set_params(ctx, macparams);
+
+		if (!EVP_MAC_init(ctx, (const unsigned char*)key.c_str(), key.size(),macparams) )
 		{
 			throw HmacEx();
 		}
-		*/
 	}
 
 	std::string Hmac::hash(const std::string& msg)
 	{
 		::EVP_MAC_CTX* ctx = openssl(ctx_.get());
 
-		size_t len = EVP_MD_size(openssl(md_));
+		size_t len = EVP_MD_size(openssl(digest(digest_)));
 
 		uchar_buf buffer(len);
 
@@ -747,6 +767,36 @@ namespace cryptoneat {
 		BIO_free(bio);
 	}
 
+    std::string PrivateKey::get_public_key_der()
+	{
+		::EVP_PKEY* pkey = openssl(pkey_);
+
+		int len = i2d_PublicKey(pkey, NULL);
+		uchar_buf buf(len);
+
+		unsigned char* p = &buf;
+		i2d_PublicKey(pkey, &p);
+
+		return buf.toString(len);
+	}
+
+    std::string PrivateKey::get_public_key_pem()
+	{
+		BIO* bio = BIO_new(BIO_s_mem());
+
+		int len = PEM_write_bio_PUBKEY(bio, openssl(pkey_));
+
+		unsigned char* output;
+		len = BIO_get_mem_data(bio, &output);
+
+		std::string result((char*)output, len);
+
+		BIO_free(bio);
+
+		return result;
+	}
+
+
 	PublicKey::PublicKey()
 	{
 		pkey_ = crypto(EVP_PKEY_new());
@@ -814,37 +864,34 @@ namespace cryptoneat {
 
 	bool generate_rsa_pair(PrivateKey& privKey, PublicKey& pubKey, int bits)
 	{
-
 		::EVP_PKEY* pkey = EVP_RSA_gen(bits);
 
-		unsigned char buf[2048];
-		unsigned char *tmp = buf;
-		//	int len = i2d_RSAPublicKey(pkey, &tmp); // nope, the other one
-		int len = i2d_PublicKey(pkey, &tmp);
+		uchar_buf buf(bits);
+		unsigned char *tmp = &buf;
+		int len = i2d_PUBKEY(pkey, &tmp);
 		if (len <= 0)
 		{
 			throw RsaKeyEx();
 		}
 
-		std::string pubKeyDer((char*)buf, len);
+		std::string pubKeyDer = buf.toString();
 		pubKey.fromDER(pubKeyDer);
 
-		tmp = buf;
+		tmp = &buf;
 		len = i2d_PrivateKey(pkey, &tmp);
 		if (len <= 0)
 		{
 			throw RsaKeyEx();
 		}
 
-		std::string privKeyDer((char*)buf, len);
+		std::string privKeyDer = buf.toString();
 		privKey.fromDER(EVP_PKEY_RSA, privKeyDer);
-
 
 		return true;
 	}
 
 
-	class SignatureCtx //: public ::EVP_MD_CTX
+	class SignatureCtx 
 	{
 	public:
 		::EVP_MD_CTX* ctx;
@@ -859,6 +906,9 @@ namespace cryptoneat {
 		}
 	};
 
+	Signature::Signature(EVP_PKEY* key)
+		: md_(digest("sha256")), pkey_(key)
+	{}
 
 	Signature::Signature(const EVP_MD* md, EVP_PKEY* key)
 		: md_(md), pkey_(key)
@@ -915,7 +965,7 @@ namespace cryptoneat {
 		return r == 1;
 	}
 
-	class EnvelopeCtx //: public EVP_CIPHER_CTX
+	class EnvelopeCtx 
 	{
 	public:
 		::EVP_CIPHER_CTX* ctx;
@@ -930,8 +980,12 @@ namespace cryptoneat {
 		}
 	};
 
+	Envelope::Envelope()
+		: cipher_(cipher("aes_256_cbc"))
+	{}
+
 	Envelope::Envelope(const EVP_CIPHER* cipher)
-		: cipher_(cipher)//, ekl_(0)
+		: cipher_(cipher)
 	{}
 
 	std::string Envelope::seal(EVP_PKEY* rsakey, const std::string& msg)
@@ -1069,6 +1123,149 @@ namespace cryptoneat {
 	///////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////
+
+	DiffieHellman::DiffieHellman(const std::string& params)
+	{		
+		PrivateKey domainKey;
+		domainKey.fromPEM(params);
+
+		::EVP_PKEY* domainParamKey = openssl( (EVP_PKEY*) domainKey);
+
+		EVP_PKEY_CTX* keyGenerationCtx = EVP_PKEY_CTX_new_from_pkey(nullptr, domainParamKey, nullptr);
+		if (!keyGenerationCtx) 
+		{
+			printf("1: %s", ERR_error_string(ERR_get_error(), NULL));
+			throw DhEx();		
+		}
+		if (EVP_PKEY_keygen_init(keyGenerationCtx) <= 0) 
+		{
+			printf("2: %s", ERR_error_string(ERR_get_error(), NULL));
+			throw DhEx();		
+		}
+		
+		int r = EVP_PKEY_generate(keyGenerationCtx, openssl( (EVP_PKEY**)dhparams_));
+		if (r <= 0) 
+		{
+			printf("3: %i %s", r, ERR_error_string(ERR_get_error(), NULL));
+			throw DhEx();		
+		}
+
+		EVP_PKEY_CTX_free(keyGenerationCtx);
+	
+	}
+
+	std::string DiffieHellman::generate()
+	{
+		int priv_len = 2 * 112;
+		OSSL_PARAM params[3];
+		EVP_PKEY *pkey = NULL;
+		EVP_PKEY_CTX *pctx = EVP_PKEY_CTX_new_from_name(NULL, "DH", NULL);
+
+		params[0] = OSSL_PARAM_construct_utf8_string("group", (char*)"ffdhe2048", 0);
+		/* "priv_len" is optional */
+		params[1] = OSSL_PARAM_construct_int("priv_len", &priv_len);
+		params[2] = OSSL_PARAM_construct_end();
+
+		EVP_PKEY_keygen_init(pctx);
+		EVP_PKEY_CTX_set_params(pctx, params);
+
+		PrivateKey domainKey;
+		::EVP_PKEY** domainParamKey = openssl( (EVP_PKEY**) domainKey);
+		EVP_PKEY_generate(pctx, domainParamKey);
+
+		std::string result = domainKey.toPEM();
+
+		EVP_PKEY_CTX_free(pctx);
+
+
+		EVP_PKEY_CTX* keyGenerationCtx = EVP_PKEY_CTX_new_from_pkey(nullptr, *domainParamKey, nullptr);
+		if (!keyGenerationCtx) 
+		{
+			printf("1: %s", ERR_error_string(ERR_get_error(), NULL));
+			throw DhEx();		
+		}
+		if (EVP_PKEY_keygen_init(keyGenerationCtx) <= 0) 
+		{
+			printf("2: %s", ERR_error_string(ERR_get_error(), NULL));
+			throw DhEx();		
+		}
+		
+		int r = EVP_PKEY_generate(keyGenerationCtx, openssl( (EVP_PKEY**)dhparams_));
+		if (r <= 0) 
+		{
+			printf("3: %i %s", r, ERR_error_string(ERR_get_error(), NULL));
+			throw DhEx();		
+		}
+		EVP_PKEY_CTX_free(keyGenerationCtx);
+
+		return result;
+	}
+
+    std::string DiffieHellman::secret(const std::string& peerKeyPEM)
+	{
+		::EVP_PKEY_CTX* ctx = 0;
+		unsigned char *skey = 0;
+		size_t skeylen = 0;
+
+		PublicKey pubKey;
+		pubKey.fromPEM(peerKeyPEM);
+
+		::EVP_PKEY* peerkey = openssl( (EVP_PKEY*)pubKey);
+		::EVP_PKEY* pkey = openssl((EVP_PKEY*)dhparams_);
+
+		ctx = EVP_PKEY_CTX_new(pkey,0);
+		if (!ctx)
+		{
+			printf("%s", ERR_error_string(ERR_get_error(), NULL));
+			throw DhEx();		
+		}
+
+		if (EVP_PKEY_derive_init(ctx) <= 0)
+		{
+			printf("%s", ERR_error_string(ERR_get_error(), NULL));
+			throw DhEx();		
+		}
+
+		if (EVP_PKEY_derive_set_peer(ctx, peerkey) <= 0)
+		{
+			printf("%s", ERR_error_string(ERR_get_error(), NULL));
+			throw DhEx();		
+		}
+
+		/* Determine buffer length */
+		if (EVP_PKEY_derive(ctx, NULL, &skeylen) <= 0)
+		{
+			printf("%s", ERR_error_string(ERR_get_error(), NULL));
+			throw DhEx();		
+		}
+
+		skey = (unsigned char*) OPENSSL_malloc(skeylen);
+
+		if (!skey)
+		{
+			printf("%s", ERR_error_string(ERR_get_error(), NULL));
+			throw DhEx();		
+		}
+		
+		if (EVP_PKEY_derive(ctx, skey, &skeylen) <= 0)
+		{
+			printf("%s", ERR_error_string(ERR_get_error(), NULL));
+			throw DhEx();		
+		}
+
+		/* Shared secret is skey bytes written to buffer skey */
+		std::string secret( (const char*) skey, skeylen );
+		std::string result = toHex(sha256(secret));
+
+		OPENSSL_free(skey);
+		EVP_PKEY_CTX_free(ctx);
+		return result;
+	}
+
+	std::string DiffieHellman::get_public_key()
+	{
+		return dhparams_.get_public_key_pem();
+	}
 
 	///////////////////////////////////////////////////////////////////////////////////
 	// static callbacks

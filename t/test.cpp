@@ -179,10 +179,10 @@ TEST_F(CryptoNeatTest, bfTest)
 
 	for(int i = 0; i < 1000; i++)
 	{
-		SymCrypt encrypt(cipher("aes_128_cbc"), key);
+		SymCrypt encrypt(cipher("aes_256_cbc"), key);
 		std::string ciph = encrypt.encrypt(input);
 
-		SymCrypt decrypt(cipher("aes_128_cbc"), key);
+		SymCrypt decrypt(cipher("aes_256_cbc"), key);
 		std::string plain = decrypt.decrypt(fromHex(toHex(ciph)));
 
 		EXPECT_EQ(input,plain);
@@ -213,12 +213,12 @@ TEST_F(CryptoNeatTest, hmacMD5Test)
     std::string input = "a well known secret";
     std::string key   = "the secret secret key";
 
-    Hmac hmac(digest("md5"),key);
+    Hmac hmac("md5",key);
 
     std::string hash = hmac.hash(input);
     std::cerr << toHex(hash) << std::endl;
 
-    Hmac hmac2(digest("md5"),key);
+    Hmac hmac2("md5",key);
     std::string input2 = "a well known secret";
     std::string hash2 = hmac2.hash(input2);
     std::cerr << toHex(hash2) << std::endl;
@@ -231,12 +231,12 @@ TEST_F(CryptoNeatTest, hmacSha1Test)
     std::string input = "a well known secret";
     std::string key   = "the secret secret key";
 
-    Hmac hmac(digest("sha1"),key);
+    Hmac hmac("sha1",key);
 
     std::string hash = hmac.hash(input);
     std::cerr << toHex(hash) << std::endl;
 
-    Hmac hmac2(digest("sha1"),key);
+    Hmac hmac2("sha1",key);
     std::string input2 = "a well known secret";
     std::string hash2 = hmac2.hash(input2);
     std::cerr << toHex(hash2) << std::endl;
@@ -270,13 +270,13 @@ TEST_F(CryptoNeatTest, EvelopeTest)
     PrivateKey privateKey("pem/private.pem");
     PublicKey publicKey("pem/public.pem");
 
-    Envelope sealer(cipher("bf_cbc") );
+    Envelope sealer(cipher("aes_128_cbc") );
 
     std::string sealed = sealer.seal(publicKey,input);
 
     std::cerr << toHex(sealed) << std::endl;
 
-    Envelope opener(cipher("bf_cbc"));
+    Envelope opener(cipher("aes_128_cbc"));
     std::string plain = opener.open(privateKey,sealed);
 
     EXPECT_EQ(input,plain);
@@ -289,13 +289,13 @@ TEST_F(CryptoNeatTest, EvelopeTest2)
     PrivateKey privateKey("pem/private.pem");
     PublicKey publicKey("pem/public.pem");
 
-    Envelope sealer(cipher("rc4"));
+    Envelope sealer(cipher("des_ede3_cfb1"));
 
     std::string sealed = sealer.seal(publicKey,input);
 
     std::cerr << toHex(sealed) << std::endl;
 
-    Envelope opener(cipher("rc4"));
+    Envelope opener(cipher("des_ede3_cfb1"));
     std::string plain = sealer.open(privateKey,sealed);
 
     EXPECT_EQ(input,plain);
@@ -381,8 +381,8 @@ TEST_F(CryptoNeatTest, RSAKeyGenTest)
     bool b = generate_rsa_pair(privateKey,publicKey);
     EXPECT_EQ(true,b);
 
-    std::cout << "publkey:" << std::endl << toHex(publicKey.toDER()).size() << std::endl;
-    std::cout << "privkey:" << std::endl << toHex(privateKey.toDER()).size() << std::endl;
+//    std::cout << "publkey:" << std::endl << toHex(publicKey.toDER()).size() << std::endl;
+//    std::cout << "privkey:" << std::endl << toHex(privateKey.toDER()).size() << std::endl;
 
     std::cout << "publkey:" << std::endl << publicKey.toPEM() << std::endl;
     std::cout << "privkey:" << std::endl << privateKey.toPEM() << std::endl;
@@ -450,6 +450,24 @@ TEST_F(CryptoNeatTest, pwdTest)
 	std::cout << b << std::endl;
 }
 
+TEST_F(CryptoNeatTest, dhTest)
+{
+    DiffieHellman dhBob;
+    std::string dhParams = dhBob.generate();
+    std::string bobPubKey = dhBob.get_public_key();
+    std::cout << bobPubKey << std::endl;
+
+    DiffieHellman dhAlice(dhParams);
+    std::string alicePubKey = dhAlice.get_public_key();
+    std::cout << alicePubKey << std::endl;
+
+    std::string bobSecret = dhBob.secret(alicePubKey);
+    std::string aliceSecret = dhAlice.secret(bobPubKey);
+
+    std::cout << (bobSecret == aliceSecret) << std::endl;
+    std::cout << bobSecret << std::endl;
+    std::cout << aliceSecret << std::endl;
+}
 
 TEST_F(CryptoNeatTest, uuidTest)
 {
