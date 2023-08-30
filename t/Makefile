@@ -4,12 +4,12 @@ release : override DEBUG = -O3
 LIB = ../libcryptoneatd.a
 release : override LIB = ../libcryptoneat.a
 
-DEFAULT_OPTS = -std=c++17
+DEFAULT_OPTS = -std=c++20
 DEFAULT_LIBS = 
 
 ifneq ($(CXX),g++)
-DEFAULT_LIBS = -stdlib=libc++ -fcoroutines-ts  -lc++abi -std=c++14
-DEFAULT_OPTS = -std=c++14 -stdlib=libc++ -fcoroutines-ts -D_RESUMABLE_FUNCTIONS_SUPPORTED 
+DEFAULT_LIBS = -stdlib=libc++ -fcoroutines-ts  -lc++abi -std=c++20
+DEFAULT_OPTS = -std=c++20 -stdlib=libc++ -fcoroutines-ts -D_RESUMABLE_FUNCTIONS_SUPPORTED 
 endif
 
 OPTIONS = -fpic -Wno-write-strings -pthread -D_REENTRANT $(DEFAULT_OPTS)
@@ -22,7 +22,7 @@ TEST_BUILD = ./build
 CPPFLAGS = -Wall -I../include $(DEBUG) $(REENTRANT) $(OPTIONS) 
 DEPS = -lssl -lcrypto -lpthread
 
-TEST_LIBS  = /usr/lib/libgtest.a  $(LIB) -luuid  $(DEPS) $(DEFAULT_LIBS)
+TEST_LIBS  = $(LIB) -luuid  $(DEPS) $(DEFAULT_LIBS)
 
 
 # Objects for the test executable

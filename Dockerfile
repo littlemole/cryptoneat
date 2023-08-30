@@ -1,5 +1,5 @@
 # This is a comment
-FROM ubuntu:18.04
+FROM ubuntu:22.04
 MAINTAINER me <little.mole@oha7.org>
 
 # std dependencies
@@ -22,16 +22,8 @@ ENV CXX=${CXX}
 
 RUN echo -e "BUILDING FOR $CXX"
 
-# compile gtest with given compiler
-RUN  cd /usr/src/gtest && \
-  if [ "$CXX" = "g++" ] ; then \
-  cmake .; \
-  else \
-  cmake -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_CXX_FLAGS="-std=c++14 -stdlib=libc++" . ; \
-  fi && \
-  make && \
-  ln -s /usr/src/gtest/libgtest.a /usr/lib/libgtest.a && \
-  ln -s /usr/src/gtest/libgtest_main.a /usr/lib/libgtest_main.a
+ADD ./docker/utest.sh /usr/local/bin/utest.sh
+RUN /usr/local/bin/utest.sh
 
 
 RUN mkdir -p /usr/local/src/cryptoneat

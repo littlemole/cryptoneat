@@ -1,4 +1,4 @@
-#include "gtest/gtest.h"
+#include "utest.h"
 #include <memory>
 #include <list>
 #include <utility>
@@ -20,43 +20,31 @@
 
 using namespace cryptoneat;
 
+struct CryptoNeatTest
+{};
 
-class CryptoNeatTest : public ::testing::Test 
-{
- protected:
-
-  static void SetUpTestCase() 
-  {}
-
-  virtual void SetUp() 
-  {
-  }
-
-  virtual void TearDown() 
-  {
-  }
-
-}; // end test setup
+UTEST_F_SETUP(CryptoNeatTest) {}
+UTEST_F_TEARDOWN(CryptoNeatTest) {}
 
 
 
-TEST_F(CryptoNeatTest, Base64Test) 
+UTEST_F(CryptoNeatTest, Base64Test) 
 {
     std::string input = "/bla/blub/wupp/bla/blub/wupp/bla/blub/wupp/bla/blub/wupp/";
     std::string b64 = Base64::encode(input);
-    EXPECT_EQ("L2JsYS9ibHViL3d1cHAvYmxhL2JsdWIvd3VwcC9ibGEvYmx1Yi93dXBwL2JsYS9ibHViL3d1cHAv",b64);
+    EXPECT_STREQ("L2JsYS9ibHViL3d1cHAvYmxhL2JsdWIvd3VwcC9ibGEvYmx1Yi93dXBwL2JsYS9ibHViL3d1cHAv",b64.c_str());
 }
 
 
-TEST_F(CryptoNeatTest, Base64Test2) 
+UTEST_F(CryptoNeatTest, Base64Test2) 
 {
     std::string input = "ewogICAiYWxnIiA6ICJIUzI1NiIsCiAgICJ0eXAiIDogIkpXVCIKfQo=";
     std::string plain = Base64::decode(input);
-    EXPECT_EQ("{\n   \"alg\" : \"HS256\",\n   \"typ\" : \"JWT\"\n}\n",plain);
+    EXPECT_STREQ("{\n   \"alg\" : \"HS256\",\n   \"typ\" : \"JWT\"\n}\n",plain.c_str());
 }
 
 
-TEST_F(CryptoNeatTest, Base64Binary)
+UTEST_F(CryptoNeatTest, Base64Binary)
 {
 
 	for( int i = 1; i < 250; i+=10)
@@ -80,99 +68,99 @@ TEST_F(CryptoNeatTest, Base64Binary)
 }
 
 
-TEST_F(CryptoNeatTest, Base64decodeTest) 
+UTEST_F(CryptoNeatTest, Base64decodeTest) 
 {
     std::string input = "L2JsYS9ibHViL3d1cHAvYmxhL2JsdWIvd3VwcC9ibGEvYmx1Yi93dXBwLw==";
     std::string plain = Base64::decode(input);
-    EXPECT_EQ("/bla/blub/wupp/bla/blub/wupp/bla/blub/wupp/",plain);
+    EXPECT_STREQ("/bla/blub/wupp/bla/blub/wupp/bla/blub/wupp/",plain.c_str());
 }
 
-TEST_F(CryptoNeatTest, Base64UrlTest) 
+UTEST_F(CryptoNeatTest, Base64UrlTest) 
 {
     std::string input = "/bla/blub/wupp/bla/blub/wupp/bla/blub/wupp/bla/blub/wupp/";
     std::string b64 = Base64Url::encode(input);
-    EXPECT_EQ("L2JsYS9ibHViL3d1cHAvYmxhL2JsdWIvd3VwcC9ibGEvYmx1Yi93dXBwL2JsYS9ibHViL3d1cHAv",b64);
+    EXPECT_STREQ("L2JsYS9ibHViL3d1cHAvYmxhL2JsdWIvd3VwcC9ibGEvYmx1Yi93dXBwL2JsYS9ibHViL3d1cHAv",b64.c_str());
 }
 
 
-TEST_F(CryptoNeatTest, Base64UrldecodeTest) 
+UTEST_F(CryptoNeatTest, Base64UrldecodeTest) 
 {
     std::string input = "L2JsYS9ibHViL3d1cHAvYmxhL2JsdWIvd3VwcC9ibGEvYmx1Yi93dXBwLw==";
     std::string plain = Base64Url::decode(input);
-    EXPECT_EQ("/bla/blub/wupp/bla/blub/wupp/bla/blub/wupp/",plain);
+    EXPECT_STREQ("/bla/blub/wupp/bla/blub/wupp/bla/blub/wupp/",plain.c_str());
 }
 
-TEST_F(CryptoNeatTest, MD5Test) 
+UTEST_F(CryptoNeatTest, MD5Test) 
 {
     std::string input = "a well known secret";
     std::string hash = toHex(md5(input));
-    EXPECT_EQ("e981fe735ca6982848f913eb0d9d254d",hash);
+    EXPECT_STREQ("e981fe735ca6982848f913eb0d9d254d",hash.c_str());
 }
 
 
-TEST_F(CryptoNeatTest, evpTest) 
+UTEST_F(CryptoNeatTest, evpTest) 
 {
     std::string input = "a well known secret";
     Digest evp(digest("md5"));
     std::string hash = toHex(evp.digest(input));
-    EXPECT_EQ("e981fe735ca6982848f913eb0d9d254d",hash);
+    EXPECT_STREQ("e981fe735ca6982848f913eb0d9d254d",hash.c_str());
 
     hash = toHex(evp.digest(input));
-    EXPECT_EQ("e981fe735ca6982848f913eb0d9d254d",hash);
+    EXPECT_STREQ("e981fe735ca6982848f913eb0d9d254d",hash.c_str());
 }
 
 
-TEST_F(CryptoNeatTest, hextest2) 
+UTEST_F(CryptoNeatTest, hextest2) 
 {
     unsigned char hex[] = { 1, 244, 27, 0, 4, 5, 0 };
     std::string s( (char*)hex, 6 );
     std::string hexed = toHex( s );
-    EXPECT_EQ("01f41b000405",hexed);
+    EXPECT_STREQ("01f41b000405",hexed.c_str());
 
     std::string raw = fromHex(hexed);
-    EXPECT_EQ(s,raw);
+    EXPECT_STREQ(s.c_str(),raw.c_str());
 }
 
 
-TEST_F(CryptoNeatTest, sha1test) 
+UTEST_F(CryptoNeatTest, sha1test) 
 {
     std::string input = "a well known secret";
     Digest evp(digest("sha1"));
     std::string hash = toHex(evp.digest(input));
-    EXPECT_EQ("652e0dbf69408801392353ba386313bf01ff04ce",hash);
+    EXPECT_STREQ("652e0dbf69408801392353ba386313bf01ff04ce",hash.c_str());
 
     hash = toHex(evp.digest(input));
-    EXPECT_EQ("652e0dbf69408801392353ba386313bf01ff04ce",hash);
+    EXPECT_STREQ("652e0dbf69408801392353ba386313bf01ff04ce",hash.c_str());
 }
 
 
 
 
-TEST_F(CryptoNeatTest, sha1test3) 
+UTEST_F(CryptoNeatTest, sha1test3) 
 {
     std::string input = "a well known secret";
     std::string hash = toHex(sha1(input));
-    EXPECT_EQ("652e0dbf69408801392353ba386313bf01ff04ce",hash);
+    EXPECT_STREQ("652e0dbf69408801392353ba386313bf01ff04ce",hash.c_str());
 
     hash = toHex(sha1(input));
-    EXPECT_EQ("652e0dbf69408801392353ba386313bf01ff04ce",hash);
+    EXPECT_STREQ("652e0dbf69408801392353ba386313bf01ff04ce",hash.c_str());
 }
 
 
 
-TEST_F(CryptoNeatTest, sha256test) 
+UTEST_F(CryptoNeatTest, sha256test) 
 {
     std::string input = "a well known secret";
     std::string hash = toHex(sha256(input));
-    EXPECT_EQ("428b79463ec0b5b89379da202f663116f93cbdb99632a86cf84183bbf787c2af",hash);
+    EXPECT_STREQ("428b79463ec0b5b89379da202f663116f93cbdb99632a86cf84183bbf787c2af",hash.c_str());
 
     hash = toHex(sha256(input));
-    EXPECT_EQ("428b79463ec0b5b89379da202f663116f93cbdb99632a86cf84183bbf787c2af",hash);
+    EXPECT_STREQ("428b79463ec0b5b89379da202f663116f93cbdb99632a86cf84183bbf787c2af",hash.c_str());
 }
 
 
 
-TEST_F(CryptoNeatTest, bfTest) 
+UTEST_F(CryptoNeatTest, bfTest) 
 {
     std::string input = "aha";
     std::string key   = "123";
@@ -185,13 +173,13 @@ TEST_F(CryptoNeatTest, bfTest)
 		SymCrypt decrypt(cipher("aes_256_cbc"), key);
 		std::string plain = decrypt.decrypt(fromHex(toHex(ciph)));
 
-		EXPECT_EQ(input,plain);
+		EXPECT_STREQ(input.c_str(),plain.c_str());
 	}
 }
 
 
 
-TEST_F(CryptoNeatTest, rc4Test) 
+UTEST_F(CryptoNeatTest, rc4Test) 
 {
     std::string input = "a well known secret";
     std::string key   = "the secret secret key";
@@ -205,10 +193,10 @@ TEST_F(CryptoNeatTest, rc4Test)
     SymCrypt decrypt(cipher("des_ede3_cfb1"), key);
     std::string plain = decrypt.decrypt(ciph);
 
-    EXPECT_EQ(input,plain);
+    EXPECT_STREQ(input.c_str(),plain.c_str());
 }
 
-TEST_F(CryptoNeatTest, hmacMD5Test) 
+UTEST_F(CryptoNeatTest, hmacMD5Test) 
 {
     std::string input = "a well known secret";
     std::string key   = "the secret secret key";
@@ -223,10 +211,10 @@ TEST_F(CryptoNeatTest, hmacMD5Test)
     std::string hash2 = hmac2.hash(input2);
     std::cerr << toHex(hash2) << std::endl;
 
-    EXPECT_EQ(hash,hash2);
+    EXPECT_STREQ(hash.c_str(),hash2.c_str());
 }
 
-TEST_F(CryptoNeatTest, hmacSha1Test) 
+UTEST_F(CryptoNeatTest, hmacSha1Test) 
 {
     std::string input = "a well known secret";
     std::string key   = "the secret secret key";
@@ -241,10 +229,10 @@ TEST_F(CryptoNeatTest, hmacSha1Test)
     std::string hash2 = hmac2.hash(input2);
     std::cerr << toHex(hash2) << std::endl;
 
-    EXPECT_EQ(hash,hash2);
+    EXPECT_STREQ(hash.c_str(),hash2.c_str());
 }
 
-TEST_F(CryptoNeatTest, SignTest) 
+UTEST_F(CryptoNeatTest, SignTest) 
 {
     std::string input = "a well known secret";
     PrivateKey privateKey("pem/private.pem");
@@ -259,12 +247,12 @@ TEST_F(CryptoNeatTest, SignTest)
 
     bool verified = verifier.verify(input,sig);
 
-    EXPECT_EQ(true,verified);
+    EXPECT_EQ(int(true),int(verified));
 }
 
 
 
-TEST_F(CryptoNeatTest, EvelopeTest) 
+UTEST_F(CryptoNeatTest, EvelopeTest) 
 {
     std::string input = "a well known secret";
     PrivateKey privateKey("pem/private.pem");
@@ -279,11 +267,11 @@ TEST_F(CryptoNeatTest, EvelopeTest)
     Envelope opener(cipher("aes_128_cbc"));
     std::string plain = opener.open(privateKey,sealed);
 
-    EXPECT_EQ(input,plain);
+    EXPECT_STREQ(input.c_str(),plain.c_str());
 }
 
 
-TEST_F(CryptoNeatTest, EvelopeTest2) 
+UTEST_F(CryptoNeatTest, EvelopeTest2) 
 {
     std::string input = "a well known secret";
     PrivateKey privateKey("pem/private.pem");
@@ -298,13 +286,13 @@ TEST_F(CryptoNeatTest, EvelopeTest2)
     Envelope opener(cipher("des_ede3_cfb1"));
     std::string plain = sealer.open(privateKey,sealed);
 
-    EXPECT_EQ(input,plain);
+    EXPECT_STREQ(input.c_str(),plain.c_str());
 }
 
 
 
 /*
-TEST_F(CryptoNeatTest, PrintIVsize) {
+UTEST_F(CryptoNeatTest, PrintIVsize) {
 
     std::cerr << "des-cbc " << EVP_CIPHER_iv_length(EVP_des_cbc()) << std::endl;
     std::cerr << "bf-cbc " << EVP_CIPHER_iv_length(EVP_bf_cbc()) << std::endl;
@@ -314,7 +302,9 @@ TEST_F(CryptoNeatTest, PrintIVsize) {
 }
 */
 
-TEST_F(CryptoNeatTest, DERTest) 
+
+
+UTEST_F(CryptoNeatTest, DERTest) 
 {
     std::string input = "a well known secret";
     PrivateKey privateKey("pem/private.pem");
@@ -346,10 +336,10 @@ TEST_F(CryptoNeatTest, DERTest)
 
     bool verified = verifier.verify(input,sig);
 
-    EXPECT_EQ(true,verified);
+    EXPECT_TRUE( verified );
 }
 
-TEST_F(CryptoNeatTest, DER2Test) 
+UTEST_F(CryptoNeatTest, DER2Test) 
 {
     std::string input = "a well known secret";
     PrivateKey privateKey("pem/private.pem");
@@ -368,10 +358,10 @@ TEST_F(CryptoNeatTest, DER2Test)
 
     bool verified = verifier.verify(input,sig);
 
-    EXPECT_EQ(true,verified);
+    EXPECT_TRUE( verified );
 }
 
-TEST_F(CryptoNeatTest, RSAKeyGenTest) 
+UTEST_F(CryptoNeatTest, RSAKeyGenTest) 
 {
     std::string input = "a well known secret";
 
@@ -379,7 +369,7 @@ TEST_F(CryptoNeatTest, RSAKeyGenTest)
     PublicKey publicKey;
 
     bool b = generate_rsa_pair(privateKey,publicKey);
-    EXPECT_EQ(true,b);
+    EXPECT_TRUE(b);
 
 //    std::cout << "publkey:" << std::endl << toHex(publicKey.toDER()).size() << std::endl;
 //    std::cout << "privkey:" << std::endl << toHex(privateKey.toDER()).size() << std::endl;
@@ -396,11 +386,11 @@ TEST_F(CryptoNeatTest, RSAKeyGenTest)
 
     bool verified = verifier.verify(input,sig);
 
-    EXPECT_EQ(true,verified);
+    EXPECT_TRUE( verified );
 
 }
 
-TEST_F(CryptoNeatTest, RSAKeyGenTestPEM) 
+UTEST_F(CryptoNeatTest, RSAKeyGenTestPEM) 
 {
     std::string input = "a well known secret";
 
@@ -408,7 +398,7 @@ TEST_F(CryptoNeatTest, RSAKeyGenTestPEM)
     PublicKey publicKey;
 
     bool b = generate_rsa_pair(privateKey,publicKey);
-    EXPECT_EQ(true,b);
+    EXPECT_TRUE( b );
 
     std::string privatekeyPEM = privateKey.toPEM();
     std::string publickeyPEM = publicKey.toPEM();
@@ -428,12 +418,12 @@ TEST_F(CryptoNeatTest, RSAKeyGenTestPEM)
 
     bool verified = verifier.verify(input,sig);
 
-    EXPECT_EQ(true,verified);
+    EXPECT_TRUE( verified );
 }
 
 
 
-TEST_F(CryptoNeatTest, pwdTest)
+UTEST_F(CryptoNeatTest, pwdTest)
 {
 	Password pwd;
 
@@ -444,13 +434,15 @@ TEST_F(CryptoNeatTest, pwdTest)
 	bool b = pwd.verify("secretpwd", hash);
 
 	std::cout << b << std::endl;
+	EXPECT_TRUE(b);
 
 	b = pwd.verify("secret-pwd", hash);
 
 	std::cout << b << std::endl;
+	EXPECT_FALSE(b);
 }
 
-TEST_F(CryptoNeatTest, dhTest)
+UTEST_F(CryptoNeatTest, dhTest)
 {
     DiffieHellman dhBob;
     std::string dhParams = dhBob.generate();
@@ -467,21 +459,22 @@ TEST_F(CryptoNeatTest, dhTest)
     std::cout << (bobSecret == aliceSecret) << std::endl;
     std::cout << bobSecret << std::endl;
     std::cout << aliceSecret << std::endl;
+    EXPECT_STREQ(bobSecret.c_str(),aliceSecret.c_str());
 }
 
-TEST_F(CryptoNeatTest, uuidTest)
+UTEST_F(CryptoNeatTest, uuidTest)
 {
     std::string uuid = uuid::generate();
-	std::cout << uuid << std::endl;
+    std::cout << uuid << std::endl;
 }
+
+
+
+UTEST_STATE();
 
 int main(int argc, char **argv) 
 {    
 	SSLUser sslUser;
 
-
-    ::testing::InitGoogleTest(&argc, argv);
-    int r = RUN_ALL_TESTS();
-
-    return r;
+    return utest_main(argc,argv);
 }

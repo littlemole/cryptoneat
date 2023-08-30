@@ -1158,7 +1158,6 @@ namespace cryptoneat {
 	{
 		int priv_len = 2 * 112;
 		OSSL_PARAM params[3];
-		EVP_PKEY *pkey = NULL;
 		EVP_PKEY_CTX *pctx = EVP_PKEY_CTX_new_from_name(NULL, "DH", NULL);
 
 		params[0] = OSSL_PARAM_construct_utf8_string("group", (char*)"ffdhe2048", 0);
