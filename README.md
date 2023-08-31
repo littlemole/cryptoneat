@@ -20,20 +20,17 @@ openssl with cpp for mere mortals
 - hex encode/encode
 
 # dependencies
-openssl, c++14, gtest, libuuid (libuuid on linux only)
+openssl, c++20, utest, libuuid (libuuid on linux only)
 
 for ubuntu do the following to install dependencies
 	
-	sudo apt-get install libgtest-dev uuid-dev libgtest-dev cmake
-	cd /usr/src/gtest
-	sudo cmake .
-	sudo make
-	sudo ln -s /usr/src/gtest/libgtest.a /usr/lib/libgtest.a
 
 # install - linux
 
 - clone from github
 - cd cryproneat
+- sudo apt-get install uuid-dev cmake
+- sudo docker/utest.sh
 - make && make test && sudo make install
 
 this will by default install to /usr/local
@@ -189,7 +186,7 @@ assuming vcpg installed in c:
 	.\vcpkg.exe install opensll gtest
 	
 
-clone and install lib. note yoz have to specify %PATH_TO_VCPKG_DIR% somehow.
+clone and install lib. note yoy have to specify %PATH_TO_VCPKG_DIR% somehow.
 
 	git clone https://littlemole/cryptoneat
 	cd cryptoneat
@@ -208,13 +205,6 @@ and run the tests
 	msbuild RUN_TESTS.vcxproj
 
 
-## use vcpkg clone
 
-https://github.com/littlemole/vcpkg/tree/promise
-
-use the cryptoneat ports.
-
-
-:-)
 
 	
