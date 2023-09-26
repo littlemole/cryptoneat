@@ -1,0 +1,12 @@
+{
+    "name": "cryptoneat",
+    "version": "0.0.9",
+    "dependencies": [
+	  {
+            "name": "openssl"
+          },
+	  {
+            "name": "utest"
+          }
+    ]
+}
