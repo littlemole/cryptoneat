@@ -5,6 +5,7 @@ cmake_minimum_required(VERSION 3.22)
 project(cryptoneat)
 #cmake_policy(SET CMP0054 NEW)
 include(CTest)
+set(VERSION 0.0.15)
 
 ############################################
 # c++ std
@@ -113,7 +114,7 @@ add_executable(Tests t/test.cpp)
 # libs for tests
 ############################################
 
-target_link_libraries(Tests ${LIBS} ${OSLIBS} )
+target_link_libraries(Tests PUBLIC ${LIBS} ${OSLIBS} )
 
 
 ############################################
@@ -130,9 +131,27 @@ file(COPY pem DESTINATION .)
 # install
 ############################################
 
-install(TARGETS cryptoneat DESTINATION lib)
+install(TARGETS cryptoneat DESTINATION lib EXPORT cryptoneat-targets)
 
 install(DIRECTORY include/cryptoneat DESTINATION include)
 
 install(FILES cryptoneat.pc DESTINATION lib/pkgconfig)
 
+install(EXPORT cryptoneat-targets DESTINATION lib/cryptoneat-${VERSION})
+
+############################################
+# Create and install package configuration 
+# and version files.
+############################################
+
+configure_file(
+   ${cryptoneat_SOURCE_DIR}/cryptoneat-config.cmake.in
+   ${cryptoneat_BINARY_DIR}/cryptoneat-config.cmake @ONLY)
+
+configure_file(
+   ${cryptoneat_SOURCE_DIR}/cryptoneat-config-version.cmake.in
+   ${cryptoneat_BINARY_DIR}/cryptoneat-config-version.cmake @ONLY)
+
+install(FILES ${cryptoneat_BINARY_DIR}/cryptoneat-config.cmake
+         ${cryptoneat_BINARY_DIR}/cryptoneat-config-version.cmake
+         DESTINATION lib/cryptoneat-${VERSION})
