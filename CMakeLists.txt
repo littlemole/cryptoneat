@@ -154,4 +154,4 @@ configure_file(
 
 install(FILES ${cryptoneat_BINARY_DIR}/cryptoneat-config.cmake
          ${cryptoneat_BINARY_DIR}/cryptoneat-config-version.cmake
-         DESTINATION lib/cryptoneat-${VERSION})
+         DESTINATION ${CMAKE_INSTALL_DATADIR}/cryptoneat-${VERSION}/cmake)
