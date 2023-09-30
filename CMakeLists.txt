@@ -81,8 +81,8 @@ set(CMAKE_CXX_FLAGS  	    "${CMAKE_CXX_FLAGS} ${FLAGS}")
 ############################################
 
 include_directories(include)
-include_directories(${cryptoneat_INCLUDE_DIRS})
-message("INC: ${cryptoneat_INCLUDE_DIRS}")
+include_directories(${OPENSSL_INCLUDE_DIR})
+message("INC: ${OPENSSL_INCLUDE_DIR}")
 
 ############################################
 # sources
