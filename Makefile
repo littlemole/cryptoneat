@@ -11,6 +11,7 @@ BUILDCHAIN = make
 CONTAINER = $(shell echo "$(LIBNAME)_$(CXX)_$(BUILDCHAIN)" | sed 's/++/pp/')
 IMAGE = littlemole/$(CONTAINER)
 
+WITH_TEST = On
 
 #################################################
 # rule to compile all (default rule)
@@ -82,10 +83,10 @@ release: clean ## make release build
 # docker stable testing environment
 
 image: ## build docker test image
-	docker build -t $(IMAGE) . -fDockerfile  --build-arg CXX=$(CXX) --build-arg BUILDCHAIN=$(BUILDCHAIN)
+	docker build -t $(IMAGE) . -fDockerfile  --build-arg CXX=$(CXX) --build-arg BUILDCHAIN=$(BUILDCHAIN) --build-arg WITH_TEST=$(WITH_TEST)
 
 clean-image: ## rebuild the docker test image from scratch
-	docker build -t $(IMAGE) . --no-cache -fDockerfile --build-arg CXX=$(CXX) --build-arg BUILDCHAIN=$(BUILDCHAIN)
+	docker build -t $(IMAGE) . --no-cache -fDockerfile --build-arg CXX=$(CXX) --build-arg BUILDCHAIN=$(BUILDCHAIN) --build-arg WITH_TEST=$(WITH_TEST)
 		
 bash: rmc image ## run the docker image and open a shell
 	docker run --name $(CONTAINER) -ti -e COMPILER=$(CXX) $(IMAGE) bash

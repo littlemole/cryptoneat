@@ -8,6 +8,7 @@ project(cryptoneat)
 set(VERSION 0.0.15)
 include(CTest)
 
+option(WITH_TEST "run tests (default:on)" ON)
 
 ############################################
 # c++ std
@@ -103,6 +104,8 @@ add_library(cryptoneat STATIC ${SOURCES})
 # tests
 ############################################
 
+if(WITH_TEST)
+
 add_executable(Tests t/test.cpp)
 
 
@@ -117,8 +120,9 @@ target_link_libraries(Tests PUBLIC ${LIBS} ${OSLIBS} )
 # run tests
 ############################################
 
-
 add_test(NAME AllTests COMMAND Tests)
+
+endif()
 
 file(COPY pem DESTINATION .)
 

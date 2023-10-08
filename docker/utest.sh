@@ -1,13 +1,16 @@
 #!/bin/bash
 set -e
 
-cd /usr/src/
+if [ "$WITH_TEST" == "On" ]
+then
 
-git clone https://github.com/sheredom/utest.h.git utest
+	cd /usr/src/
 
-cd utest
+	git clone https://github.com/sheredom/utest.h.git utest
 
-cp utest.h /usr/local/include/
+	cd utest
 
+	cp utest.h /usr/local/include/
 
+fi
 

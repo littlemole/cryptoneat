@@ -20,6 +20,9 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
 ARG CXX=g++
 ENV CXX=${CXX}
 
+ARG WITH_TEST=On
+ENV WITH_TEST=${WITH_TEST}
+
 RUN echo -e "BUILDING FOR $CXX"
 
 ADD ./docker/utest.sh /usr/local/bin/utest.sh
