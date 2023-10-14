@@ -47,7 +47,6 @@
         "name": "gcc-debug",
         "displayName": "gcc Debug",
         "description": "linux base",
-        "hidden": true,
         "binaryDir": "${sourceDir}/out/build/x64-Debug",
         "cacheVariables": {
           "CMAKE_C_COMPILER": "gcc",
@@ -64,7 +63,6 @@
         "name": "gcc-release",
         "displayName": "gcc Release",
         "description": "Sets release build type",
-        "hidden": true,
         "inherits": "gcc-debug",
         "binaryDir": "${sourceDir}/out/build/x64-Release",
         "cacheVariables": {
@@ -72,30 +70,56 @@
         }
       },
       {
-        "name": "gcc-libevent-debug",
-        "displayName": "gcc libevent Debug",
-        "description": "Sets debug build type with libevent",
-        "inherits": "gcc-debug",
+        "name": "clang-debug",
+        "displayName": "clang Debug",
+        "description": "linux base",
+        "binaryDir": "${sourceDir}/out/build/x64-Debug",
         "cacheVariables": {
-          "WITH_LIBEVENT": "On"
+          "CMAKE_C_COMPILER": "clang",
+          "CMAKE_CXX_COMPILER": "clang++",
+          "CMAKE_BUILD_TYPE": "Debug"
+        },
+        "condition": {
+          "type": "equals",
+          "lhs": "${hostSystemName}",
+          "rhs": "Linux"
         }
       },
       {
-        "name": "gcc-libevent-release",
-        "displayName": "gcc libevent Release",
-        "description": "Sets debug build type with libevent",
-        "inherits": "gcc-release",
+        "name": "clang-release",
+        "displayName": "clang Release",
+        "description": "Sets release build type",
+        "inherits": "clang-debug",
+        "binaryDir": "${sourceDir}/out/build/x64-Release",
         "cacheVariables": {
-          "WITH_LIBEVENT": "On"
+          "CMAKE_BUILD_TYPE": "Release"
         }
       }
     ],
     "buildPresets": [
       {
-        "name": "default-build-linux",
-        "displayName": "Default",
-        "configurePreset": "gcc-libevent-debug",
-        "description": "Vanilla build"
+        "name": "gcc-debug",
+        "displayName": "Debug gcc",
+        "configurePreset": "gcc-debug",
+        "description": "Vanilla build gcc debug"
+      },
+      {
+        "name": "gcc-release",
+        "displayName": "Release gcc",
+        "configurePreset": "gcc-release",
+        "description": "Vanilla build gcc release"
+      },
+      {
+        "name": "clang-debug",
+        "displayName": "Debug clang++",
+        "configurePreset": "clang-debug",
+        "description": "Vanilla build clang debug"
+      },
+      {
+        "name": "clang-release",
+        "displayName": "Release clang++",
+        "configurePreset": "clang-release",
+        "description": "Vanilla build clang release"
       },
       {
         "name": "default-build-windows",
@@ -112,13 +136,37 @@
     ],
     "testPresets": [
       {
-        "name": "core-test-linux",
+        "name": "gcc-debug-test",
         "description": "Enable output on failure",
         "configurePreset": "gcc-debug",
         "output": {
           "outputOnFailure": true
         }
       },
+      {
+        "name": "gcc-release-test",
+        "description": "Enable output on failure",
+        "configurePreset": "gcc-release",
+        "output": {
+          "outputOnFailure": true
+        }
+      },
+      {
+        "name": "clang-debug-test",
+        "description": "Enable output on failure",
+        "configurePreset": "clang-debug",
+        "output": {
+          "outputOnFailure": true
+        }
+      },
+      {
+        "name": "clang-release-test",
+        "description": "Enable output on failure",
+        "configurePreset": "clang-release",
+        "output": {
+          "outputOnFailure": true
+        }
+      },      
       {
         "name": "debug-test-windows",
         "description": "Enable output on failure",
