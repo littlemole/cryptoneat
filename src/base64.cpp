@@ -10,9 +10,9 @@
 namespace cryptoneat {
  
 //Calculates the length of a decoded base64 string
-int calcDecodeLength(const char* b64input, int len)
+size_t calcDecodeLength(const char* b64input, size_t len)
 { 
-	int padding = 0;
+	size_t padding = 0;
 	 
 	if (b64input[len-1] == '=' && b64input[len-2] == '=') 
 	{
@@ -28,16 +28,16 @@ int calcDecodeLength(const char* b64input, int len)
 
 std::string Base64::decode(const std::string& input)
 {
-	int decodeLen = calcDecodeLength(input.c_str(),input.size());
+	size_t decodeLen = calcDecodeLength(input.c_str(),input.size());
 	char_buf buffer(decodeLen+1);
 	buffer[decodeLen] = '\0';
 
-	BIO* bio = BIO_new_mem_buf(input.c_str(),input.size());
+	BIO* bio = BIO_new_mem_buf(input.c_str(), (long)input.size());
 	BIO* b64 = BIO_new(BIO_f_base64());
 	bio = BIO_push(b64, bio);
 
 	BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL); //Do not use newlines to flush buffer
-	int length = BIO_read(bio, &buffer, input.size());
+	int length = BIO_read(bio, &buffer, (long) input.size());
 
 	BIO_free_all(bio);
 
@@ -59,11 +59,11 @@ std::string Base64::encode(const std::string& s, bool singleline)
 	bio = BIO_push(b64, bio);
 
 	BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL); //Ignore newlines - write everything in one line
-    BIO_write(bio, s.c_str(), s.size());
+    BIO_write(bio, s.c_str(), (long)s.size());
 
-    [[gnu::unused]] 
     int unused = BIO_flush(bio);
 	unused = BIO_set_close(bio, BIO_NOCLOSE);
+    (void)unused;
 
     unsigned char* output;
     int len = BIO_get_mem_data(bio, &output);

@@ -57,10 +57,10 @@ UTEST_F(CryptoNeatTest, Base64Binary)
 		}
 		char c = -32;
 		oss.write(&c,1);
-		int s1 = oss.str().size();
+		size_t s1 = oss.str().size();
 		std::string b64 = Base64::encode(oss.str());
 		std::string tmp = Base64::decode(b64);
-		int s2 = tmp.size();
+		size_t s2 = tmp.size();
 
 		EXPECT_EQ(s1,s2);
 	}

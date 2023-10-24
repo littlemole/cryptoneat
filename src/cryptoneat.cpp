@@ -521,7 +521,7 @@ namespace cryptoneat {
 
 		KeyIvFromPassword(const EVP_CIPHER* ciph,const std::string& salt, const std::string& pwd, const EVP_MD* mdig)
 			: iv(EVP_CIPHER_iv_length(openssl(ciph))), 
-			  key(EVP_BytesToKey( openssl(ciph), openssl(mdig), (unsigned char*)(salt.c_str()),0,pwd.size(),10,0,&iv))
+			  key(EVP_BytesToKey( openssl(ciph), openssl(mdig), (unsigned char*)(salt.c_str()),0, (long)pwd.size(),10,0,&iv))
 		{
 			if( salt.size() != 8 )
 			{
@@ -533,7 +533,7 @@ namespace cryptoneat {
 				openssl(mdig),
 				(unsigned char*)(salt.c_str()),
 				(const unsigned char*)(pwd.c_str()),
-				pwd.size(),
+				(long)pwd.size(),
 				10,
 				&key,
 				&iv
@@ -563,14 +563,14 @@ namespace cryptoneat {
 			throw SymCryptEx();
 		}
 
-		int n = EVP_CIPHER_block_size(openssl(cipher_)) + input.size();
+		int n = (int)(EVP_CIPHER_block_size(openssl(cipher_)) + input.size());
 
 		uchar_buf outbuf(n);
 
 		if (EVP_EncryptUpdate(
 			ctx.ctx,
 			&outbuf, &n,
-			(unsigned char*)input.c_str(), input.size()
+			(unsigned char*)input.c_str(), (long)input.size()
 		) != 1)
 		{
 			throw SymCryptEx();
@@ -619,13 +619,13 @@ namespace cryptoneat {
 			throw SymCryptEx();
 		}
 
-		int n = EVP_CIPHER_block_size(c) + raw.size();
+		int n = (int) (EVP_CIPHER_block_size(c) + raw.size());
 		uchar_buf outbuf(n + 1);
 
 		if (EVP_DecryptUpdate(
 			ctx.ctx,
 			&outbuf, &n,
-			(const unsigned char*)raw.c_str()+16, raw.size()-16
+			(const unsigned char*)raw.c_str()+16, (long)raw.size()-16
 		) != 1)
 		{
 			throw SymCryptEx();
@@ -756,13 +756,13 @@ namespace cryptoneat {
 	void PrivateKey::fromDER(int type, const std::string& k)
 	{
 		const unsigned char* s = (const unsigned char*)k.c_str();
-		pkey_ = crypto(d2i_PrivateKey(type, openssl(&pkey_), &s, k.size()));
+		pkey_ = crypto(d2i_PrivateKey(type, openssl(&pkey_), &s, (long)k.size()));
 	}
 
 	void PrivateKey::fromPEM(const std::string& k)
 	{
 		BIO* bio = BIO_new(BIO_s_mem());
-		BIO_write(bio, k.c_str(), k.size());
+		BIO_write(bio, k.c_str(), (long)k.size());
 		pkey_ = crypto(PEM_read_bio_PrivateKey(bio, NULL, NULL, NULL));
 		BIO_free(bio);
 	}
@@ -850,14 +850,14 @@ namespace cryptoneat {
 	void PublicKey::fromDER(const std::string& k)
 	{
 		const unsigned char* s = (const unsigned char*)k.c_str();
-		d2i_PUBKEY(openssl(&pkey_), &s, k.size());
+		d2i_PUBKEY(openssl(&pkey_), &s, (long) k.size());
 	}
 
 
 	void PublicKey::fromPEM(const std::string& k)
 	{
 		BIO* bio = BIO_new(BIO_s_mem());
-		BIO_write(bio, k.c_str(), k.size());
+		BIO_write(bio, k.c_str(), (long)k.size());
 		pkey_ = crypto(PEM_read_bio_PUBKEY(bio, NULL, NULL, NULL));
 		BIO_free(bio);
 	}
@@ -1014,13 +1014,13 @@ namespace cryptoneat {
 			throw EnvelopeEx();
 		}
 
-		int n = EVP_CIPHER_block_size(cipher) + msg.size() - 1;
+		int n = (int) (EVP_CIPHER_block_size(cipher) + msg.size() - 1);
 		uchar_buf outbuf(n + 1);
 
 		if (EVP_SealUpdate(
 			ctx.ctx,
 			&outbuf, &n,
-			(unsigned char*)msg.c_str(), msg.size()
+			(unsigned char*)msg.c_str(), (long) msg.size()
 		) != 1)
 		{
 			throw EnvelopeEx();
@@ -1066,13 +1066,13 @@ namespace cryptoneat {
 			throw EnvelopeEx();
 		}
 
-		int n = EVP_CIPHER_block_size(cipher) + ciphertxt.size() - 1;
+		int n = (int) (EVP_CIPHER_block_size(cipher) + ciphertxt.size() - 1);
 		uchar_buf outbuf(n + 1);
 
 		if (EVP_OpenUpdate(
 			ctx.ctx,
 			&outbuf, &n,
-			(unsigned char*)ciphertxt.c_str(), ciphertxt.size()
+			(unsigned char*)ciphertxt.c_str(), (long) ciphertxt.size()
 		) != 1)
 		{
 			throw EnvelopeEx();
@@ -1106,8 +1106,8 @@ namespace cryptoneat {
 
 		unsigned char buf[129];
 
-		int r = PKCS5_PBKDF2_HMAC_SHA1(plaintxt.c_str(), plaintxt.size(),
-			(const unsigned char *)(salt.c_str()), salt.size(), 1000,
+		int r = PKCS5_PBKDF2_HMAC_SHA1(plaintxt.c_str(), (long) plaintxt.size(),
+			(const unsigned char *)(salt.c_str()), (long) salt.size(), 1000,
 			128, buf);
 
 		if (!r)

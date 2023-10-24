@@ -41,7 +41,11 @@ find_package(OpenSSL REQUIRED)
 
 set(LINKERFLAGS "")
 set(STDLIB "")
-set(FLAGS "")
+if(WIN32)
+    set(FLAGS "/W3 -D_CRT_SECURE_NO_WARNINGS")
+else()
+    set(FLAGS "-Wall -Wextra")
+endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     set(STDLIB "c++abi")
