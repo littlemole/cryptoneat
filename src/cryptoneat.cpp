@@ -1281,12 +1281,12 @@ namespace cryptoneat {
 #endif		
 	}
 
-	CRYPTO_dynlock_value* SSLUser::dyn_create_function(const char* file, int line)
+	CRYPTO_dynlock_value* SSLUser::dyn_create_function(const char* /*file*/, int /*line*/ )
 	{
 		return new CRYPTO_dynlock_value;
 	}
 
-	void SSLUser::dyn_lock_function(int mode, CRYPTO_dynlock_value* mutex, const char* file, int line)
+	void SSLUser::dyn_lock_function(int mode, CRYPTO_dynlock_value* mutex, const char* /*file*/, int /*line*/ )
 	{
 		if (mode & CRYPTO_LOCK)
 		{
@@ -1298,12 +1298,12 @@ namespace cryptoneat {
 		}
 	}
 
-	void SSLUser::dyn_destroy_function(CRYPTO_dynlock_value* mutex, const char* file, int line)
+	void SSLUser::dyn_destroy_function(CRYPTO_dynlock_value* mutex, const char* /*file*/, int /*line*/ )
 	{
 		delete mutex;
 	}
 
-	void SSLUser::locking_function(int mode, int n, const char* file, int line)
+	void SSLUser::locking_function(int mode, int n, const char* /*file*/, int /*line*/ )
 	{
 		if (mode & CRYPTO_LOCK)
 		{
@@ -1351,9 +1351,11 @@ namespace cryptoneat {
 		if (rand_bytes_read <= 0) 
 		{
 			// seed from stack as urandom has not enough entropie
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 			RAND_seed(buf, sizeof buf);
+#pragma GCC diagnostic pop
 		}
-
 
 	}
 

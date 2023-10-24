@@ -50,7 +50,7 @@ std::string Base64::decode(const char* s)
     return decode( std::string(s) );
 }
 
-std::string Base64::encode(const std::string& s, bool singleline)
+std::string Base64::encode(const std::string& s, bool /*singleline*/ )
 {
 	BIO *bio, *b64;
 
