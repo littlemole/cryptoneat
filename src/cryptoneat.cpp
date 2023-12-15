@@ -79,8 +79,7 @@ void DH_get0_key(::DH* dh, const BIGNUM** k, int unused)
 #endif
 
 #if OPENSSL_VERSION_MAJOR >= 3
-#include <openssl/provider.h>
-
+//#include <openssl/provider.h>
 #endif
 
 

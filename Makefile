@@ -13,6 +13,8 @@ IMAGE = littlemole/$(CONTAINER)
 
 WITH_TEST = On
 
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
 #################################################
 # rule to compile all (default rule)
 #################################################
@@ -99,6 +101,19 @@ rmc: stop ## remove docker container, if any
 
 rmi : ## remove existing docker image, if any
 	-docker rmi $(IMAGE)
+
+package:
+	rm -rf out
+
+	cmake --preset "gcc-debug"
+	cmake --build --preset "gcc-debug"
+	DESTDIR=$(SCRIPT_DIR)_install cmake --build  --target install --preset="gcc-debug"
+
+	cmake --preset "gcc-release"
+	cmake --build --preset "gcc-release"
+	DESTDIR=$(SCRIPT_DIR)_install cmake --build  --target install --preset="gcc-release"
+
+	cpack --config release.cmake -G DEB
 
 
 

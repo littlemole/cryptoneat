@@ -1,0 +1,9 @@
+Architecture: amd64
+Description: openssl crypto for mere mortals.
+Maintainer: littlemole
+Package: cryptoneat
+Priority: optional
+Section: devel
+Version: 0.1.1
+Installed-Size: 1558
+

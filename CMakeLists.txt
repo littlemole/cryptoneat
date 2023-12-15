@@ -160,3 +160,12 @@ install(FILES ${cryptoneat_BINARY_DIR}/cryptoneat-config.cmake
          ${cryptoneat_BINARY_DIR}/cryptoneat-config-version.cmake
          DESTINATION lib/cryptoneat-${VERSION})
 
+
+############################################
+# packaging
+############################################
+
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
+include(package)
+         
+         
