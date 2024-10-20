@@ -1,9 +1,0 @@
-prefix=/usr/local
-includedir=${prefix}/include
-libdir=${prefix}/lib
-
-Name: c++ cryptoneat library
-Description: openssl crypto for mere mortals
-Version: 0.0.2
-Cflags: -I${includedir}
-Libs: -L${libdir} -lcryptoneat -lssl -lcrypto -lpthread -std=c++20

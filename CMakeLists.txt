@@ -49,13 +49,13 @@ set(STDLIB "")
 if(WIN32)
     set(FLAGS "/W3 -D_CRT_SECURE_NO_WARNINGS")
 else()
-    set(FLAGS "-Wall -Wextra")
+    set(FLAGS "-Wall -Wextra -Wno-unused-parameter")
 endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     set(STDLIB "c++abi")
-    set(LINKERFLAGS "-stdlib=libc++ -fcoroutines-ts  -std=c++20")
-    set(FLAGS "-stdlib=libc++ -fcoroutines-ts ")
+    set(LINKERFLAGS "-stdlib=libc++ -std=c++20")
+    set(FLAGS "-stdlib=libc++ ")
 endif()
 
 
@@ -85,12 +85,33 @@ set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${LINKERFLAGS}" )
 set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} ")
 set(CMAKE_CXX_FLAGS  	    "${CMAKE_CXX_FLAGS} ${FLAGS}")
 
+set(INCLUDES "include")
+
+if(WITH_TEST) 
+
+    include(FetchContent)
+
+	# utest
+    FetchContent_Declare(
+        utest
+        # Specify the commit you depend on and update it regularly.
+        URL https://github.com/sheredom/utest.h/archive/25c4a9d78df0fb12e6c5364bc811f7f675e9dcb3.zip
+    )
+
+	FetchContent_GetProperties(utest)
+    if(NOT utest_POPULATED)
+        FetchContent_Populate(utest)
+    endif()
+	
+	set(INCLUDES "include" "${CMAKE_BINARY_DIR}/_deps/utest-src/")
+
+endif()
 
 ############################################
 # include directories
 ############################################
 
-include_directories(include)
+include_directories(${INCLUDES})
 include_directories(${OPENSSL_INCLUDE_DIR})
 message("INC: ${OPENSSL_INCLUDE_DIR}")
 

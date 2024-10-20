@@ -6,11 +6,11 @@ DEFAULT_OPTS = -std=c++20
 DEFAULT_LIBS = 
 
 ifneq ($(CXX),g++)
-DEFAULT_LIBS = -stdlib=libc++ -fcoroutines-ts  -lc++abi #-std=c++14
-DEFAULT_OPTS = -std=c++20 -stdlib=libc++ -fcoroutines-ts -D_RESUMABLE_FUNCTIONS_SUPPORTED 
+DEFAULT_LIBS = -stdlib=libc++ -lc++abi 
+DEFAULT_OPTS = -std=c++20 -stdlib=libc++ -D_RESUMABLE_FUNCTIONS_SUPPORTED 
 endif
 
-OPTIONS = -std=c++14 -fpic -Wno-write-strings -pthread -D_REENTRANT $(DEFAULT_OPTS)
+OPTIONS = -std=c++20 -fpic -Wno-write-strings -pthread -D_REENTRANT $(DEFAULT_OPTS)
 
 # compile flags
 CPPFLAGS = -Wall -I../include $(DEBUG) $(REENTRANT) $(INCLUDE) $(OPTIONS) 

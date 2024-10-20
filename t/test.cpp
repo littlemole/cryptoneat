@@ -1,4 +1,3 @@
-#include "utest.h"
 #include <memory>
 #include <list>
 #include <utility>
@@ -9,6 +8,7 @@
 #include <exception>
 #include <functional>
 
+#include "utest.h"
 #include "cryptoneat/cryptoneat.h"
 #include "cryptoneat/base64.h"
 #include "cryptoneat/uuid.h"

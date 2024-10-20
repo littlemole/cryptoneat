@@ -8,8 +8,8 @@ DEFAULT_OPTS = -std=c++20
 DEFAULT_LIBS = 
 
 ifneq ($(CXX),g++)
-DEFAULT_LIBS = -stdlib=libc++ -fcoroutines-ts  -lc++abi -std=c++20
-DEFAULT_OPTS = -std=c++20 -stdlib=libc++ -fcoroutines-ts -D_RESUMABLE_FUNCTIONS_SUPPORTED 
+DEFAULT_LIBS = -stdlib=libc++ -lc++abi -std=c++20
+DEFAULT_OPTS = -std=c++20 -stdlib=libc++ -D_RESUMABLE_FUNCTIONS_SUPPORTED 
 endif
 
 OPTIONS = -fpic -Wno-write-strings -pthread -D_REENTRANT $(DEFAULT_OPTS)
@@ -36,7 +36,10 @@ TEST_BINS = $(TEST_SRCFILES:%.cpp=$(TEST_BUILD)/%.bin)
 # rule to compile all (default rule)
 #################################################
 
-all: $(TEST_BINS)
+all: utest.h $(TEST_BINS)
+
+utest.h:
+	curl https://raw.githubusercontent.com/sheredom/utest.h/25c4a9d78df0fb12e6c5364bc811f7f675e9dcb3/utest.h > utest.h
 
 #################################################
 # rules to compile .o files from .cpp source
